@@ -1,8 +1,8 @@
 pragma solidity >=0.4.22 <0.6.0;
 
-contract ajxchcContract {
-    function aj_jzyzxjc(string ocr, string ajxx) public returns(string _ret)
+contract ajxchcContract { //案件瑕疵核查
+    function aj_jzyzxjc(string ocr, string ah) public returns(bool)
     {
-        _ret = "{\"zxtz\":{\"ah\":\"ok\",\"bzxr\":\"nok\",\"larq\":\"ok\"}}";
+        return true;
     }
 } 
