@@ -38,7 +38,7 @@ function concat(string memory _self, string memory _str) internal returns (strin
         memcpy(retptr+bytes(_self).length, strptr, bytes(_str).length);
     }
 
-function uint2str(uint i) internal returns (string c) {
+function uint2str(uint i) internal returns (string memory c) {
         if (i == 0) return "0";
         uint j = i;
         uint length;
@@ -49,7 +49,7 @@ function uint2str(uint i) internal returns (string c) {
         bytes memory bstr = new bytes(length);
         uint k = length - 1;
         while (i != 0){
-            bstr[k--] = byte(48 + i % 10);
+            bstr[k--] = byte((uint8)(48 + i % 10));
             i /= 10;
         }
         c = string(bstr);
