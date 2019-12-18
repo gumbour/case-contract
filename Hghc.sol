@@ -20,7 +20,7 @@ contract HghcContract { //合规核查
     function aj_hghc_jy1(string memory ajbs) internal returns(bool)
     {
         string memory itemValue;
-        
+
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.zxtz.fczxtzsrq");
         if(bytes(itemValue).length == 0)
         {
@@ -141,9 +141,77 @@ contract HghcContract { //合规核查
     //cclx财产类型 //ccmc财产名称 //cczbjg财产甄别结果 //cczt财产状态 //ccbkzxyy财产不可执行原因
     function aj_hghc_jy6(string memory ajbs) internal returns(bool)
     {
+        string memory itemValue;
+        string memory key;
+        
+        for(uint i = 0; i < MAX_ITEM; i++)
+        {
+            key = LibString.concat("jghInfo.ycmcc.", LibString.uint2str(i));
+            key = LibString.concat(key, ".cclx");
+
+            itemValue = czjl.aj_getInfo(ajbs, key);
+            if(bytes(itemValue).length == 0)
+            {
+                break;
+            }
+
+            /*------------------------------
+            if(LibString.equal(itemValue, "09_05064-1") == 0)
+            {
+                return false;
+            }*/
+        }
+        return true;
+    }
+
+    //核查7 已向被执行人发出限制消费令，并将符合条件的被执行人纳入失信被执行人名单
+    function aj_hghc_jy7(string memory ajbs) internal returns(bool)
+    {
+        //string memory itemValue;
+        //string memory key;
+
 
     }
 
+    //核查8 已完成终本约谈且约谈日期必须早于结案日期
+    function aj_hghc_jy8(string memory ajbs) internal returns(bool)
+    {
+        //string memory itemValue;
+        //string memory key;
+
+
+    }
+
+    //核查9 尚未执行标的金额必须大于零
+    function aj_hghc_jy9(string memory ajbs) internal returns(bool)
+    {
+        string memory itemValue;
+        uint jabdje = 0;
+        uint sjdwje = 0;
+
+        //尚未执行标的金额 > 0
+        itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.swzxbdje");
+        if(LibString.toint(itemValue) > 0)
+        {
+            return true;
+        }
+        
+        //结案标的金额 -实际到位金额 >0
+        itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.jabdje");
+        jabdje = LibString.toint(itemValue);
+        itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.sjdwje");
+        if(jabdje > sjdwje)
+        {
+            return true;
+        }
+
+        //应执行标的金额+迟延履行金+迟延履行利息-实际到位金额>0
+
+        //[应执行标的金额]+[迟延履行金]+[迟延履行利息]-【划拨-划拨总额】-【拍卖-成交总额】-【变卖-变卖总额】-【以物抵债-折抵总额】
+
+    }
+
+    //合规核查, 核查2和3需要内容结果?
     function aj_hghc(string memory ajbs, uint64 uuid) public returns(bool)
     {
         string[] memory keys = new string[](50);
