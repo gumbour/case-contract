@@ -3,42 +3,27 @@ pragma solidity >=0.4.22 <0.6.0;
 library LibString {
 using LibString for *;
 
-function memcpy(uint dest, uint src, uint len) private {
-        // Copy word-length chunks while possible
-        for(; len >= 32; len -= 32) {
-            assembly {
-                mstore(dest, mload(src))
-            }
-            dest += 32;
-            src += 32;
-        }
+    function concat(string memory _self, string memory _str) internal returns (string memory _ret) {
+        uint idx = 0;
+        uint i = 0;
+        bytes memory bself = bytes(_self);
+        bytes memory bstr = bytes(_str);
 
-        // Copy remaining bytes
-        uint mask = 256 ** (32 - len) - 1;
-        assembly {
-            let srcpart := and(mload(src), not(mask))
-            let destpart := and(mload(dest), mask)
-            mstore(dest, or(destpart, srcpart))
-        }
-    }
-
-function concat(string memory _self, string memory _str) internal returns (string memory _ret) {
         _ret = new string(bytes(_self).length + bytes(_str).length);
-
-        uint selfptr;
-        uint strptr;
-        uint retptr;
-        assembly {
-            selfptr := add(_self, 0x20)
-            strptr := add(_str, 0x20)
-            retptr := add(_ret, 0x20)
+        bytes memory bret = bytes(_ret);
+        
+        for(i = 0; i < bytes(_self).length; i++)
+        {
+            bret[idx++] = bself[i];
         }
         
-        memcpy(retptr, selfptr, bytes(_self).length);
-        memcpy(retptr+bytes(_self).length, strptr, bytes(_str).length);
+        for(i = 0; i < bytes(_str).length; i++)
+        {
+            bret[idx++] = bstr[i];
+        }
     }
 
-function uint2str(uint i) internal returns (string memory c) {
+    function uint2str(uint i) internal returns (string memory c) {
         if (i == 0) return "0";
         uint j = i;
         uint length;
@@ -53,5 +38,46 @@ function uint2str(uint i) internal returns (string memory c) {
             i /= 10;
         }
         c = string(bstr);
+    }
+
+    function toInt(string memory _self) internal returns (int _ret) {
+        _ret = 0;
+        if (bytes(_self).length == 0) {
+            return;
+        }
+        
+        uint16 i;
+        uint8 digit;
+        for (i=0; i<bytes(_self).length; ++i) {
+            digit = uint8(bytes(_self)[i]);
+            if (!(digit == 0x20 || digit == 0x09 || digit == 0x0D || digit == 0x0A)) {
+                break;
+            }
+        }
+        
+        bool positive = true;
+        if (bytes(_self)[i] == '+') {
+            positive = true;
+            i++;
+        } else if(bytes(_self)[i] == '-') {
+            positive = false;
+            i++;
+        }
+
+        for (; i<bytes(_self).length; ++i) {
+            digit = uint8(bytes(_self)[i]);
+            if (!(digit >= 0x30 && digit <= 0x39)) {
+                return;
+            }
+            _ret = _ret*10 + int(digit-0x30);
+        }        
+        
+        if (!positive) {
+            _ret = -_ret;
+        }
+    }
+
+    function toUint(string _self) internal returns (uint _ret) {
+        return uint(toInt(_self));
     }
 }
