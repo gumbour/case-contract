@@ -148,7 +148,7 @@ contract HghcContract { //合规核查
                 break;
             }
 
-            if(LibString.equal(itemValue, "09_05064-1") == 0)
+            if(LibString.equal(itemValue, "09_05064-1") == false)
             {
                 return RESULT_NOK;
             }
@@ -203,19 +203,19 @@ contract HghcContract { //合规核查
     function aj_hghc_jy9(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
-        uint jabdje = 0;
-        uint sjdwje = 0;
+        int jabdje = 0;
+        int sjdwje = 0;
 
         //尚未执行标的金额 > 0
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.swzxbdje");
-        if(LibString.toint(itemValue) > 0)
+        if(LibString.toInt(itemValue) > 0)
         {
             return RESULT_OK;
         }
         
         //结案标的金额 -实际到位金额 >0
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.jabdje");
-        jabdje = LibString.toint(itemValue);
+        jabdje = LibString.toInt(itemValue);
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.sjdwje");
         if(jabdje > sjdwje)
         {
@@ -228,84 +228,64 @@ contract HghcContract { //合规核查
 
     }
 
+    function aj_hghc_jy10(string memory ajbs) internal returns(uint)
+    {
+        //string memory itemValue;
+        //string memory key;
+
+
+    }
+
+    function aj_hghc_jy11(string memory ajbs) internal returns(uint)
+    {
+        //string memory itemValue;
+        //string memory key;
+
+
+    }
+
+    function aj_hghc_jy12(string memory ajbs) internal returns(uint)
+    {
+        //string memory itemValue;
+        //string memory key;
+
+
+    }
+
     //合规核查, 核查2和3需要内容结果?
     function aj_hghc(string memory ajbs, uint64 uuid) public returns(bool)
     {
         string[] memory keys = new string[](50);
         string[] memory values = new string[](50);
-        uint idx = 0;
-        string[2] memory resultK = ["jyx_id", "jyjg"];
-        string[2] memory resultV = ["0", "1"];
+        uint ret = 0;
+        uint pos = 0;
         
         //检验项1
         //执行通知书有无记录zxtz, 发起执行通知书日期和报告财产令
-        keys[idx] = resultK[0];
-        values[idx++] = LibString.uint2str(idx);
-        keys[idx] = resultK[1];
-        if(aj_hghc_jy1(ajbh) == true)
-        {
-            values[idx++] = resultV[1];
-        }
-        else
-        {
-            values[idx++] = resultV[0];
-        }
+        
+        ret = aj_hghc_jy1(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 1, ret);
 
         //校验项2
-        keys[idx] = resultK[0];
-        values[idx++] = LibString.uint2str(idx);
-        keys[idx] = resultK[1];
-        if(aj_hghc_jy2(ajbh) == true)
-        {
-            values[idx++] = resultV[1];
-        }
-        else
-        {
-            values[idx++] = resultV[0];
-        }
+        ret = aj_hghc_jy2(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 2, ret);
 
         //校验项3
-        keys[idx] = resultK[0];
-        values[idx++] = LibString.uint2str(idx);
-        keys[idx] = resultK[1];
-        if(aj_hghc_jy3(ajbh) == true)
-        {
-            values[idx++] = resultV[1];
-        }
-        else
-        {
-            values[idx++] = resultV[0];
-        }
+        ret = aj_hghc_jy3(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 3, ret);
 
         //检验项4
-        keys[idx] = resultK[0];
-        values[idx++] = LibString.uint2str(idx);
-        keys[idx] = resultK[1];
-        if(aj_hghc_jy4(ajbh) == true)
-        {
-            values[idx++] = resultV[1];
-        }
-        else
-        {
-            values[idx++] = resultV[0];
-        }
+        ret = aj_hghc_jy4(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 4, ret);
 
         //校验项5
-        keys[idx] = resultK[0];
-        values[idx++] = LibString.uint2str(idx);
-        keys[idx] = resultK[1];
-        if(aj_hghc_jy5(ajbh) == true)
-        {
-            values[idx++] = resultV[1];
-        }
-        else
-        {
-            values[idx++] = resultV[0];
-        }
+        ret = aj_hghc_jy5(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 5, ret);
 
 
         //检验项6
-        
+        ret = aj_hghc_jy6(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 6, ret);
 
         //检验项7
         //执行主体信息表zxztxx
@@ -318,6 +298,8 @@ contract HghcContract { //合规核查
         //bxzr被限制人
         //xzzl限制种类
         //jcrq解除日期
+        ret = aj_hghc_jy7(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 7, ret);
 
 
         //检验项8
@@ -336,6 +318,8 @@ contract HghcContract { //合规核查
         //bytr被约谈人
         //ytsj约谈事由
         //sftyzb是否同意终本
+        ret = aj_hghc_jy8(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 8, ret);
 
         //检验项9
         //结案情况表jaqk
@@ -360,6 +344,8 @@ contract HghcContract { //合规核查
 
         //划拨表hb
         //划拨金额hbje
+        ret = aj_hghc_jy9(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 9, ret);
 
         //校验10
         //结案情况表jaqk
@@ -369,6 +355,8 @@ contract HghcContract { //合规核查
 
         //执行裁定书表zbnr_zxcds
         //pjzw
+        ret = aj_hghc_jy10(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 10, ret);
 
         //校验项11
         //执行主体信息表zxztxx
@@ -376,30 +364,15 @@ contract HghcContract { //合规核查
 	    //dsrfldw当事人地位
 	    //dsrlx当事人类型
 	    //sfyzjg身份验证结果
+        ret = aj_hghc_jy11(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 11, ret);
 
         //校验项12
         //收案和立案信息表sahlaxx
         //zxbdnr执行标的内容
+        ret = aj_hghc_jy12(ajbs);
+        pos = aj_hghc_jl(keys, values, pos, 12, ret);
 
-
-
-
-        //string memory bgccl = czjl.aj_getInfo(ah, "jghInfo.bgccl.bgcclfcrq");
-        /*for(uint i = 0; i < 14; i++)
-        {
-            //jyx_id
-            index = LibString.uint2str(i+1);
-            prex = LibString.concat("hgxjy.", index);
-            key = LibString.concat(prex, "jyx_id");
-            keys[idx] = key;
-            values[idx] = index;
-            idx++;
-            //jyjg
-            key = LibString.concat(prex, "jyjg");
-            keys[idx] = key;
-            values[idx] = "1";
-            idx++;
-        }*/
 
         czjl.aj_setResult(uuid, keys, values);
         return true;
