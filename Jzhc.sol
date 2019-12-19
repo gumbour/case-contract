@@ -10,7 +10,7 @@ contract CzjlContract {
 import "./LibString.sol";
 
 contract JzhcContract { //卷宗核查
-    address public czjlAddr = 0x2FB1Bb9cB68B8Da05eca3869526740d8fE099297;
+    address public czjlAddr = 0x5E0A0044153da8644e866af8cbbA8f230b32E8E4;
     CzjlContract czjl = CzjlContract(czjlAddr);
 
     //校验卷宗是否存在 0: 不存在 1: 存在

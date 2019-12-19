@@ -93,7 +93,7 @@ contract JzyzxhcContract { //卷宗一致性核查
         }
         
         return false;
-    }    
+    }
 
     function aj_jzyzxhc(string memory ajbs, uint64 uuid) public returns(bool)
     {
