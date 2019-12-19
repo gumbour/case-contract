@@ -6,6 +6,8 @@ contract CzjlContract {
         function aj_getInfo(string memory ajbs, string memory key) public view returns(string memory _ret);
 }
 
+import "./LibString.sol";
+
 contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查列表
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
@@ -22,11 +24,25 @@ contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查
         _ret = sxzzajlbjg[uuid];
     }*/
 
-    function aj_sxzbdfcajlb(string memory ajbs, string memory jarq, string memory wlcks, uint64 uuid) public returns(bool)
+    function aj_sxzbdfcajlb(string memory ajbs, string memory jarq, uint wlcks, uint64 uuid) public returns(bool)
     {
+        uint jqrqUnix = LibString.touint(jarq);
+        uint cur = now();
+        string memory keys = new string[](1);
+        string memory values = new string[](1);
+
         //终本复查案件筛选
-        
-        return true;
+        keys[0] = "isfcaj";
+        if((jqrqUnix + (wlcks - 1 <= cur)) && (now() <= wlcks * 3))
+        {
+            values[0] = "1";
+            czjl.aj_setResult(uuid, keys, values);
+            return true;
+        }
+
+        values[0] = "0";
+        czjl.aj_setResult(uuid, keys, values);
+        return false;
     }
 
     function aj_sxzbdfcajlbjg(uint64 uuid) public view returns(string[] memory keys, string[] memory values)
