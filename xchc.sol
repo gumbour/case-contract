@@ -7,29 +7,33 @@ contract CzjlContract {
         function aj_getInfo(string memory ajbs, string memory key) public view returns(string memory _ret);
 }
 
+import "./LibString.sol";
+
 contract XchcContract { //案件瑕疵核查
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
 
+    function aj_xchc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
+    {
+        uint index = pos;
+        string[2] memory resultK = ["jyx_id", "jyjg"];
+        string[2] memory resultV = ["0", "1"];
+
+        //jyx_id
+        keys[index] = resultK[0];
+        values[index] = LibString.uint2str(jyid);
+        index++;
+
+        //jyjg
+        keys[index] = resultK[1];
+        values[index] = resultV[result];
+        index++;
+        return index;
+    }
+
     function aj_xchc(string memory ajbs, uint64 uuid) public returns(bool)
     {
-        //string memory ret = "{\"blqxjy\":[{\"jyx_id\":1,\"jyjg\":1},{\"jyx_id\":2,\"jyjg\":0},{\"jyx_id\":3,\"jyjg\":3},{\"jyx_id\":3,\"jyjg\":3},{\"jyx_id\":3,\"jyjg\":3},{\"jyx_id\":3,\"jyjg\":3},{\"jyx_id\":4,\"jyjg\":3},{\"jyx_id\":5,\"jyjg\":1},{\"jyx_id\":6,\"jyjg\":3},{\"jyx_id\":7,\"jyjg\":1},{\"jyx_id\":8,\"jyjg\":3},{\"jyx_id\":9,\"jyjg\":1},{\"jyx_id\":10,\"jyjg\":1},{\"jyx_id\":11,\"jyjg\":1},{\"jyx_id\":12,\"jyjg\":3},{\"jyx_id\":13,\"jyjg\":3},{\"jyx_id\":14,\"jyjg\":3}],\"jzyy\":[{\"jynr\":1,\"jyx_id\":1,\"lcjd_id\":53,\"jyjg\":0},{\"jynr\":1,\"jyx_id\":1,\"lcjd_id\":54,\"jyjg\":0},{\"jynr\":0,\"jyx_id\":1,\"lcjd_id\":65,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":2,\"lcjd_id\":67,\"jyjg\":3},{\"jynr\":2,\"jyx_id\":3,\"lcjd_id\":68,\"jyjg\":1},{\"jynr\":1,\"jyx_id\":3,\"lcjd_id\":69,\"jyjg\":2},{\"jynr\":1,\"jyx_id\":3,\"lcjd_id\":70,\"jyjg\":2},{\"jynr\":0,\"jyx_id\":3,\"lcjd_id\":71,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":4,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":5,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":6,\"jyjg\":3},{\"jynr\":1,\"jyx_id\":7,\"lcjd_id\":72,\"jyjg\":2},{\"jynr\":0,\"jyx_id\":8,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":9,\"jyjg\":3},{\"jynr\":1,\"jyx_id\":10,\"lcjd_id\":74,\"jyjg\":2},{\"jynr\":0,\"jyx_id\":11,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":12,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":13,\"jyjg\":3},{\"jynr\":0,\"jyx_id\":14,\"jyjg\":3}]}";
-        //xchcjg[uuid] = ret;
-        string[] memory keys;
-        string[] memory values;
-        string memory ret = czjl.aj_getInfo(ajbs, "hghc");
-
-        //进行检查项核查
-        if(bytes(ret).length == 0)
-        {
-            keys[0] = "testkey0";
-            values[0] = "nok";
-        }
-        else
-        {
-            keys[0] = "testkey0";
-            values[0] = "ok";
-        }
+        
 
         czjl.aj_setResult(uuid, keys, values);
         return true;
