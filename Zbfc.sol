@@ -34,10 +34,10 @@ contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查
 
     function aj_sxzbdfcajlb(string memory ajbs, string memory jarq, uint wlcks, uint64 uuid) public returns(bool)
     {
-        uint jqrqUnix = LibString.touint(jarq);
-        uint cur = now();
-        string memory keys = new string[](1);
-        string memory values = new string[](1);
+        uint jqrqUnix = LibString.toUint(jarq);
+        uint cur = now;
+        string[] memory keys = new string[](1);
+        string[] memory values = new string[](1);
         string memory itemValue;
 
         //终本复查案件筛选
