@@ -13,6 +13,7 @@ contract XchcContract { //案件瑕疵核查
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
 
+    //瑕疵核查结果检查记录
     function aj_xchc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
     {
         uint index = pos;
@@ -34,6 +35,9 @@ contract XchcContract { //案件瑕疵核查
     function aj_xchc(string memory ajbs, uint64 uuid) public returns(bool)
     {
         
+        //瑕疵核查校验
+
+        //瑕疵核查记录
 
         czjl.aj_setResult(uuid, keys, values);
         return true;
