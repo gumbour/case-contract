@@ -182,6 +182,16 @@ contract HghcContract { //合规核查
     }
 
     //核查7 已向被执行人发出限制消费令，并将符合条件的被执行人纳入失信被执行人名单
+    //执行主体信息表zxztxx
+    //dsr当事人
+    //dsrfldw当事人地位
+    //dsrlx当事人类型
+    //sfyzjg身份验证结果
+
+    //限制高消费表xzgxf
+    //bxzr被限制人
+    //xzzl限制种类
+    //jcrq解除日期
     function aj_hghc_jy7(string memory ajbs) internal returns(uint)
     {
         //string memory itemValue;
@@ -191,6 +201,21 @@ contract HghcContract { //合规核查
     }
 
     //核查8 已完成终本约谈且约谈日期必须早于结案日期
+    //结案情况表jaqk
+    //jarq结案日期
+    //sqrsqzjbczxcx申请人申请终结本次执行程序
+
+    //执行主体信息表zxztxx
+    //dsr当事人
+    //dsrfldw当事人地位
+
+    //收案和立案信息表sahlaxx
+    //laay立案案由
+
+    //约谈表yt
+    //bytr被约谈人
+    //ytsj约谈事由
+    //sftyzb是否同意终本
     function aj_hghc_jy8(string memory ajbs) internal returns(uint)
     {
         //string memory itemValue;
@@ -200,6 +225,28 @@ contract HghcContract { //合规核查
     }
 
     //核查9 尚未执行标的金额必须大于零
+    //结案情况表jaqk
+    //swzxbdje尚未执行标的金额
+    //jabdje结案标的金额
+    //cylxj迟延履行金
+    //cylxlx迟延履行利息
+    //sjdwje实际到位金额
+
+    //收案和立案信息表zb1_sahlaxx
+    //yzxbdje应执行标的金额
+    
+    //拍卖表pm
+    //成交金额cjje
+
+
+    //变卖表bm
+    //bmze变卖总额
+
+    //以物抵债表ywdz
+    //zdje执抵金额
+
+    //划拨表hb
+    //划拨金额hbje
     function aj_hghc_jy9(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
@@ -228,6 +275,13 @@ contract HghcContract { //合规核查
 
     }
 
+    //结案情况表jaqk
+    //jarq结案日期
+	//jafs结案方式
+    //jaws结案文书
+
+    //执行裁定书表zbnr_zxcds
+    //pjzw
     function aj_hghc_jy10(string memory ajbs) internal returns(uint)
     {
         //string memory itemValue;
@@ -236,6 +290,11 @@ contract HghcContract { //合规核查
 
     }
 
+    //执行主体信息表zxztxx
+    //dsr当事人
+	//dsrfldw当事人地位
+	//dsrlx当事人类型
+	//sfyzjg身份验证结果
     function aj_hghc_jy11(string memory ajbs) internal returns(uint)
     {
         //string memory itemValue;
@@ -244,6 +303,8 @@ contract HghcContract { //合规核查
 
     }
 
+    //收案和立案信息表sahlaxx
+    //zxbdnr执行标的内容
     function aj_hghc_jy12(string memory ajbs) internal returns(uint)
     {
         //string memory itemValue;
@@ -288,88 +349,29 @@ contract HghcContract { //合规核查
         pos = aj_hghc_jl(keys, values, pos, 6, ret);
 
         //检验项7
-        //执行主体信息表zxztxx
-        //dsr当事人
-        //dsrfldw当事人地位
-        //dsrlx当事人类型
-        //sfyzjg身份验证结果
-
-        //限制高消费表xzgxf
-        //bxzr被限制人
-        //xzzl限制种类
-        //jcrq解除日期
         ret = aj_hghc_jy7(ajbs);
         pos = aj_hghc_jl(keys, values, pos, 7, ret);
 
 
         //检验项8
-        //结案情况表jaqk
-        //jarq结案日期
-        //sqrsqzjbczxcx申请人申请终结本次执行程序
-
-        //执行主体信息表zxztxx
-        //dsr当事人
-        //dsrfldw当事人地位
-
-        //收案和立案信息表sahlaxx
-        //laay立案案由
-
-        //约谈表yt
-        //bytr被约谈人
-        //ytsj约谈事由
-        //sftyzb是否同意终本
         ret = aj_hghc_jy8(ajbs);
         pos = aj_hghc_jl(keys, values, pos, 8, ret);
 
         //检验项9
-        //结案情况表jaqk
-        //swzxbdje尚未执行标的金额
-	    //jabdje结案标的金额
-	    //cylxj迟延履行金
-	    //cylxlx迟延履行利息
-	    //sjdwje实际到位金额
-
-        //收案和立案信息表zb1_sahlaxx
-        //yzxbdje应执行标的金额
-    
-        //拍卖表pm
-        //成交金额cjje
-
-
-        //变卖表bm
-        //bmze变卖总额
-
-        //以物抵债表ywdz
-        //zdje执抵金额
-
-        //划拨表hb
-        //划拨金额hbje
+        
         ret = aj_hghc_jy9(ajbs);
         pos = aj_hghc_jl(keys, values, pos, 9, ret);
 
         //校验10
-        //结案情况表jaqk
-        //jarq结案日期
-	    //jafs结案方式
-	    //jaws结案文书
-
-        //执行裁定书表zbnr_zxcds
-        //pjzw
+        
         ret = aj_hghc_jy10(ajbs);
         pos = aj_hghc_jl(keys, values, pos, 10, ret);
 
         //校验项11
-        //执行主体信息表zxztxx
-        //dsr当事人
-	    //dsrfldw当事人地位
-	    //dsrlx当事人类型
-	    //sfyzjg身份验证结果
         ret = aj_hghc_jy11(ajbs);
         pos = aj_hghc_jl(keys, values, pos, 11, ret);
 
         //校验项12
-        //收案和立案信息表sahlaxx
-        //zxbdnr执行标的内容
         ret = aj_hghc_jy12(ajbs);
         pos = aj_hghc_jl(keys, values, pos, 12, ret);
 
