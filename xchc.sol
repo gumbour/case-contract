@@ -42,6 +42,11 @@ contract XchcContract { //案件瑕疵核查
         values[index] = LibString.uint2str(jyid);
         index++;
 
+        //lcjd_id
+        keys[index] = resultK[2];
+        values[index] = LibString.uint2str(lcjd_id);
+        index++;
+
         //jyjg
         keys[index] = resultK[1];
         values[index] = resultV[result];
@@ -51,6 +56,35 @@ contract XchcContract { //案件瑕疵核查
 
 
     //办理期限校验
+    function aj_xchc_blqxjy(string memory ajbs, string[] memory keys, string[] memory values, uint pos) internal returns(uint)
+    {
+        //执行通知书、报告财产令 发出日期
+        //zdnrInfo.zxtzs.0.larq
+        //Jghinfo.Jaqk.jarq
+
+        //Wlckxx.tqcxrq网络查控信息.提起查询日期
+
+        //财产调查：有记录;搜查：无记录;悬赏执行：无记录;司法审计：无记录
+
+        //对被执行人的住房公积金（仅对自然人）、金融理财产品、收益类保险、股息红利作过调查
+
+        //没有未核实完毕的执行线索
+
+        //未发现可供执行财产或发现的财产不能处置
+
+        //已向被执行人发出限制消费令，并将符合条件的被执行人纳入失信被执行人名单
+
+        //已完成终本约谈且约谈日期必须早于结案日期
+
+        //尚未执行标的金额必须大于零
+
+        //已作出终本裁定
+
+        //不存在被执行人都已死亡情形
+
+        //执行标的内容不能仅为行为执行
+        
+    }
 
     //卷宗院印校验
     function aj_xchc_yy_jylist(string memory ajbs, string memory prex, string memory key) internal returns(uint)
@@ -76,56 +110,51 @@ contract XchcContract { //案件瑕疵核查
         return RESULT_OK;
     }
 
-
-    function aj_xchc(string memory ajbs, uint64 uuid) public returns(bool)
+    //2 瑕疵核查记录
+    function aj_xchc_yy(string memory ajbs, string[] memory keys, string[] memory values, uint posstart) internal returns(uint)
     {
-        string[] memory keys = new string[](50);
-        string[] memory values = new string[](50);
         uint ret = 0;
-        uint pos = 0;
-        
-        //1 瑕疵核查校验
+        uint pos = posstart;
 
-        //2 瑕疵核查记录
         //执行通知书
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.zxtzs.", "yy");
-        aj_xchc_yy_jl(keys, values, pos, 1, ret, LCJD_ZXTZS);
+        pos = aj_xchc_yy_jl(keys, values, pos, 1, ret, LCJD_ZXTZS);
 
         //报告财产令
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.bgccl.", "yy");
-        aj_xchc_yy_jl(keys, values, pos, 1, ret, LCJD_BGCCL);
+        pos = aj_xchc_yy_jl(keys, values, pos, 1, ret, LCJD_BGCCL);
 
         //送达回证
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.sdhz.", "qm");
-        aj_xchc_yy_jl(keys, values, pos, 1, ret, LCJD_SDHZ);
+        pos = aj_xchc_yy_jl(keys, values, pos, 1, ret, LCJD_SDHZ);
 
         //调查笔录
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.dcbl.", "qm");
-        aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_XCDCBL);
+        pos = aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_XCDCBL);
 
         //搜查令
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.scl.", "qm");
-        aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_SCL);
+        pos = aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_SCL);
         
 
         //悬赏公告
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.xsgg.", "yy");
-        aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_XSGG);
+        pos = aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_XSGG);
         
         
 
         //限制消费令
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.xzxfl.", "yy");
-        aj_xchc_yy_jl(keys, values, pos, 7, ret, LCJD_XZXFL);
+        pos = aj_xchc_yy_jl(keys, values, pos, 7, ret, LCJD_XZXFL);
 
         //失信决定书
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.sxjds.", "yy");
-        aj_xchc_yy_jl(keys, values, pos, 7, ret, LCJD_SXJDS);
+        pos = aj_xchc_yy_jl(keys, values, pos, 7, ret, LCJD_SXJDS);
 
 
         //约谈笔录
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.zbytjl.", "qm");
-        aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_YTBL);
+        pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_YTBL);
 
         //拟终结本次执行程序告知书, 院印 签名
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.nzjgzs.", "yy");
@@ -134,26 +163,41 @@ contract XchcContract { //案件瑕疵核查
             ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.nzjgzs.", "qm");
             if(ret == RESULT_OK)
             {
-                aj_xchc_yy_jl(keys, values, pos, 8, ret, 0);
+                pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, 0);
             }
         }
         else
         {
-            aj_xchc_yy_jl(keys, values, pos, 8, ret, 0);
+            pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, 0);
         }
         
         //终结本次执行程序申请书
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.zjbccxsqs.", "sfqm");
-        aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_ZJBLQKB);
+        pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_ZJBLQKB);
 
         //合议庭评议笔录
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.zbhytbl.", "qm");
-        aj_xchc_yy_jl(keys, values, pos, 8, ret, 0);
+        pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, 0);
 
 
         //终本裁定书
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.zxcds.", "yy");
-        aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_ZBCDS);
+        pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_ZBCDS);
+
+        return pos;
+    }
+
+    function aj_xchc(string memory ajbs, uint64 uuid) public returns(bool)
+    {
+        string[] memory keys = new string[](50);
+        string[] memory values = new string[](50);
+        uint pos = 0;
+        
+        //1 办理期限校验
+        pos = aj_xchc_blqxjy(ajbs, keys, values, 0);
+
+        //2 院印有无校验
+        aj_xchc_yy(ajbs, keys, values, pos);
 
         czjl.aj_setResult(uuid, keys, values);
         return true;
@@ -169,4 +213,4 @@ contract XchcContract { //案件瑕疵核查
         czjlAddr = recordContractAddr;
         czjl = CzjlContract(czjlAddr);
     }
-} 
+}
