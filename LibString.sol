@@ -24,8 +24,9 @@ using LibString for *;
     }
 
     function uint2str(uint i) internal returns (string memory c) {
-        if (i == 0) return "0";
-        uint j = i;
+        uint p = i;
+        if (p == 0) return "0";
+        uint j = p;
         uint length;
         while (j != 0){
             length++;
@@ -33,9 +34,9 @@ using LibString for *;
         }
         bytes memory bstr = new bytes(length);
         uint k = length - 1;
-        while (i != 0){
-            bstr[k--] = byte((uint8)(48 + i % 10));
-            i /= 10;
+        while (p != 0){
+            bstr[k--] = byte((uint8)(48 + p % 10));
+            p /= 10;
         }
         c = string(bstr);
     }
@@ -70,14 +71,19 @@ using LibString for *;
                 return;
             }
             _ret = _ret*10 + int(digit-0x30);
-        }        
+        }
         
         if (!positive) {
             _ret = -_ret;
         }
     }
 
-    function toUint(string _self) internal returns (uint _ret) {
+    function toUint(string memory _self) internal returns (uint _ret) {
         return uint(toInt(_self));
+    }
+
+    function equal(string memory _self, string memory str) internal returns(bool)
+    {
+        return keccak256(bytes(_self)) == keccak256(bytes(str));
     }
 }

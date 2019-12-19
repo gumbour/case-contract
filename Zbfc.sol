@@ -33,7 +33,7 @@ contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查
 
         //终本复查案件筛选
         keys[0] = "isfcaj";
-        if((jqrqUnix + (wlcks - 1 <= cur)) && (now() <= wlcks * 3))
+        if((jqrqUnix + (wlcks - 1 <= cur)) && (cur <= wlcks * 3))
         {
             values[0] = "1";
             czjl.aj_setResult(uuid, keys, values);
