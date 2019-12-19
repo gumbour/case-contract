@@ -9,8 +9,8 @@ contract CzjlContract {
 
 import "./LibString.sol";
 
-contract JzhcContract { //卷宗核查 
-    address public czjlAddr;
+contract JzhcContract { //卷宗核查
+    address public czjlAddr = 0x2FB1Bb9cB68B8Da05eca3869526740d8fE099297;
     CzjlContract czjl = CzjlContract(czjlAddr);
 
     //校验卷宗是否存在 0: 不存在 1: 存在
@@ -27,30 +27,16 @@ contract JzhcContract { //卷宗核查
         return 1;
     }
 
-    //送达回证
-    function aj_jzhc_jy_sdhz(string memory ajbs) internal returns(bool)
-    {
-        string memory itemValue;
-
-        itemValue = czjl.aj_getInfo(ajbs, "zdnrInfo.bgccl.0.ah");
-
-        if(bytes(itemValue).length == 0)
-        {
-            return 0;
-        }
-        return 1;
-    }
-
     //记录卷宗核查记录
-    function aj_jzhc_jl(string[] memory keys, string[] memory values, uint indx, uint result, uint lcjd_id) internal returns(uint)
+    function aj_jzhc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint lcjd_id) internal returns(uint)
     {
-        uint index = indx;
+        uint index = pos;
         string[3] memory resultK = ["jyx_id", "jyjg", "lcjd_id"];
         string[4] memory resultV = ["0", "1", "2", "3"];
 
         //jyx_id
         keys[index] = resultK[0];
-        values[index] = LibString.uint2str(index);
+        values[index] = LibString.uint2str(jyid);
         index++;
 
         //lcjd_id
@@ -63,50 +49,57 @@ contract JzhcContract { //卷宗核查
         values[index] = resultV[result];
         index++;
         return index;
-
     }
 
     function aj_jzhc(string memory ajbs, uint64 uuid) public returns(bool)
     {
-        string[] memory keys = new string[](27);
-        string[] memory values = new string[](27);
-        uint indx = 0;
-        bool ret = true;
+        string[] memory keys = new string[](50);
+        string[] memory values = new string[](50);
+        uint pos = 0;
+        uint ret = 0;
 
         //校验执行通知书
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.zxtzs.0.ah");
-        indx = aj_jzhc_jl(keys, values, indx, ret, 53);
+        pos = aj_jzhc_jl(keys, values, 1, pos, ret, 53);
 
         //报告财产令
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.bgccl.0.ah");
-        indx = aj_jzhc_jl(keys, values, indx, ret, 54);
+        pos = aj_jzhc_jl(keys, values, 1, pos, ret, 54);
         
 
         //送达回证
-        //"zdnrInfo.bgccl.0.ah"
-        indx = aj_jzhc_jl(keys, values, indx, ret, 65);
+        ret = aj_jzhc_jy(ajbs, "zdnrInfo.sdhz.0.ah");
+        pos = aj_jzhc_jl(keys, values, 1, pos, ret, 65);
 
         //财产查询反馈汇总表
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.cccxfkzb.0.ah");
-        indx = aj_jzhc_jl(keys, values, indx, ret, 67);
+        pos = aj_jzhc_jl(keys, values, 2, pos, ret, 67);
 
         //现场调查笔录/搜查令/悬赏公告/司法审计报告任一份
+        ret = aj_jzhc_jy(ajbs, "zdnrInfo.dcbl.0.ah");
+        pos = aj_jzhc_jl(keys, values, 3, pos, ret, 68);
+        ret = aj_jzhc_jy(ajbs, "zdnrInfo.scl.0.ah");
+        pos = aj_jzhc_jl(keys, values, 3, pos, ret, 69);
+        ret = aj_jzhc_jy(ajbs, "zdnrInfo.xsgg.0.ah");
+        pos = aj_jzhc_jl(keys, values, 3, pos, ret, 70);
+        ret = aj_jzhc_jy(ajbs, "zdnrInfo.Sfsjbg.0.ah");
+        pos = aj_jzhc_jl(keys, values, 3, pos, ret, 71);
 
         //限制消费令
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        indx = aj_jzhc_jl(keys, values, indx, ret, 72);
+        pos = aj_jzhc_jl(keys, values, 4, pos, ret, 72);
 
         //约谈笔录
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        indx = aj_jzhc_jl(keys, values, indx, ret, 73);
+        pos = aj_jzhc_jl(keys, values, 5, pos, ret, 73);
 
         //终本裁定书
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        indx = aj_jzhc_jl(keys, values, indx, ret, 74);
+        pos = aj_jzhc_jl(keys, values, 6, pos, ret, 74);
 
         //终结本次执行程序案件办理情况表
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        indx = aj_jzhc_jl(keys, values, indx, ret, 75);
+        pos = aj_jzhc_jl(keys, values, 7, pos, ret, 75);
 
         czjl.aj_setResult(uuid, keys, values);
         return true;

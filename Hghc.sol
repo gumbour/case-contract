@@ -12,28 +12,48 @@ import "./LibString.sol";
 contract HghcContract { //合规核查
     using LibString for *;
     uint constant MAX_ITEM = 30;
+    uint constant RESULT_NOK = 0;
+    uint constant RESULT_OK = 1;
 
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
 
+    function aj_hghc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
+    {
+        uint index = pos;
+        string[2] memory resultK = ["jyx_id", "jyjg"];
+        string[2] memory resultV = ["0", "1"];
+
+        //jyx_id
+        keys[index] = resultK[0];
+        values[index] = LibString.uint2str(jyid);
+        index++;
+
+        //jyjg
+        keys[index] = resultK[1];
+        values[index] = resultV[result];
+        index++;
+        return index;
+    }
+
     //执行通知书有无记录zxtz, 发起执行通知书日期和报告财产令
-    function aj_hghc_jy1(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy1(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
 
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.zxtz.fczxtzsrq");
         if(bytes(itemValue).length == 0)
         {
-            return false;
+            return RESULT_NOK;
         }
 
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.bgccl.bgcclfcrq");
         if(bytes(itemValue).length == 0)
         {
-            return false;
+            return RESULT_NOK;
         }
 
-        return true;
+        return RESULT_OK;
     }
 
     //近3个月内，发起过对所有已开通查询功能的财产项目的总对总查询；
@@ -49,7 +69,7 @@ contract HghcContract { //合规核查
         
     //jaqk结案情况表
     //jarq结案日期
-    function aj_hghc_jy2(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy2(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
         string memory key;
@@ -70,49 +90,49 @@ contract HghcContract { //合规核查
             //now()
         }
 
-        return true;
+        return RESULT_OK;
     }
     
 
     //校验3 财产调查表、搜查表、悬赏执行表、司法审计表至少有一个表里有记录
-    function aj_hghc_jy3(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy3(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
         
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.ccdc.0.bdcr");
         if(bytes(itemValue).length != 0)
         {
-            return true;
+            return RESULT_OK;
         }
         itemValue = czjl.aj_getInfo(ajbs, "zdnrInfo.scl.0.ah");
         if(bytes(itemValue).length != 0)
         {
-            return true;
+            return RESULT_OK;
         }
         itemValue = czjl.aj_getInfo(ajbs, "zdnrInfo.xsgg.0.ah");
         if(bytes(itemValue).length != 0)
         {
-            return true;
+            return RESULT_OK;
         }
         itemValue = czjl.aj_getInfo(ajbs, "zdnrInfo.sfsjbg.0.ah");
         if(bytes(itemValue).length != 0)
         {
-            return true;
+            return RESULT_OK;
         }
 
-        return true;
+        return RESULT_NOK;
     }
 
     //对被执行人的住房公积金（仅对自然人）、金融理财产品、收益类保险、股息红利作过调查
     //财产调查表ccdc //bdcr被调查人 //dcnr调查内容
-    function aj_hghc_jy4(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy4(string memory ajbs) internal returns(uint)
     {
 
     }
 
     //没有未核实完毕的执行线索
     //执行线索表zxxs //xszt线索状态
-    function aj_hghc_jy5(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy5(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
         string memory key;
@@ -130,16 +150,16 @@ contract HghcContract { //合规核查
 
             if(LibString.equal(itemValue, "09_05064-1") == 0)
             {
-                return false;
+                return RESULT_NOK;
             }
         }
-        return true;
+        return RESULT_OK;
     }
 
     //未发现可供执行财产或发现的财产不能处置
     //已查明财产表ycmcc
     //cclx财产类型 //ccmc财产名称 //cczbjg财产甄别结果 //cczt财产状态 //ccbkzxyy财产不可执行原因
-    function aj_hghc_jy6(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy6(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
         string memory key;
@@ -156,16 +176,13 @@ contract HghcContract { //合规核查
             }
 
             /*------------------------------
-            if(LibString.equal(itemValue, "09_05064-1") == 0)
-            {
-                return false;
-            }*/
+            */
         }
-        return true;
+        return RESULT_OK;
     }
 
     //核查7 已向被执行人发出限制消费令，并将符合条件的被执行人纳入失信被执行人名单
-    function aj_hghc_jy7(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy7(string memory ajbs) internal returns(uint)
     {
         //string memory itemValue;
         //string memory key;
@@ -174,7 +191,7 @@ contract HghcContract { //合规核查
     }
 
     //核查8 已完成终本约谈且约谈日期必须早于结案日期
-    function aj_hghc_jy8(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy8(string memory ajbs) internal returns(uint)
     {
         //string memory itemValue;
         //string memory key;
@@ -183,7 +200,7 @@ contract HghcContract { //合规核查
     }
 
     //核查9 尚未执行标的金额必须大于零
-    function aj_hghc_jy9(string memory ajbs) internal returns(bool)
+    function aj_hghc_jy9(string memory ajbs) internal returns(uint)
     {
         string memory itemValue;
         uint jabdje = 0;
@@ -193,7 +210,7 @@ contract HghcContract { //合规核查
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.swzxbdje");
         if(LibString.toint(itemValue) > 0)
         {
-            return true;
+            return RESULT_OK;
         }
         
         //结案标的金额 -实际到位金额 >0
@@ -202,7 +219,7 @@ contract HghcContract { //合规核查
         itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.sjdwje");
         if(jabdje > sjdwje)
         {
-            return true;
+            return RESULT_OK;
         }
 
         //应执行标的金额+迟延履行金+迟延履行利息-实际到位金额>0
