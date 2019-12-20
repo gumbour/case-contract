@@ -12,6 +12,7 @@ import "./LibString.sol";
 contract HghcContract { //合规核查
     using LibString for *;
     uint constant MAX_ITEM = 30;
+    uint constant MAX_BDCR = 5;
     uint constant RESULT_NOK = 0;
     uint constant RESULT_OK = 1;
     string constant XW = "09_ZX0008-3"; //执行标的内容-行为的标识
@@ -20,10 +21,26 @@ contract HghcContract { //合规核查
     string constant FR = "09_01001-2"; //法人标识
     string constant FFRZZ = "09_01001-3"; //非法人组织标识
     string constant SW = "死亡";
-
+    string constant YH = "YH";//商业银行
+    string constant BDC = "IP"; //不动产
+    string constant HLWYH = "IF";//互联网银行
+    string constant GSZJ = "GS"; //工商总局
+    string constant RMYH = "RH"; //人民银行
+    string constant ZQ = "ZQ";//证券
+    string constant CL = "CL";//车辆
+    string constant JRLC = "金融理财产品";
+    string constant GJJ = "公积金";
+    string constant SYLBX = "收益类保险";
+    string constant GXHL = "股息红利";
 
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
+
+    struct BdcrInfo {
+        string bdcr;
+        string bdcrlx;
+        bool[4] ccdcqk;
+    }
 
     function aj_hghc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
     {
@@ -81,7 +98,7 @@ contract HghcContract { //合规核查
         string memory itemValue;
         string memory key;
 
-        for(uint i = 0; i < MAX_ITEM; i++)
+        for(uint i = 0; ; i++)
         {
             key = LibString.concat("jghInfo.wlckxx.", LibString.uint2str(i));
             key = LibString.concat(key, ".tqcxrq");
@@ -130,11 +147,165 @@ contract HghcContract { //合规核查
         return RESULT_NOK;
     }
 
+    function aj_hghc_bdcr_lx(string memory ajbs, string memory bdcr) internal returns(string memory ret)
+    {
+        string memory item;
+        string memory prefix;
+        string memory fullkey;
+
+        //执行主体信息
+        for(uint i = 0; ; i++)
+        {
+            prefix = LibString.concat("jghinfo.zxztxx.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".dsr");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+
+            if(bytes(item).length == 0)
+            {
+                break;
+            }
+
+            if(LibString.equal(item, bdcr))
+            {
+                fullkey = LibString.concat(prefix, ".dsrlx");
+                ret = czjl.aj_getInfo(ajbs, fullkey);
+                return ret;
+            }
+        }
+        
+        ret = "";
+    }
+
+    function aj_hghc_check_result(BdcrInfo memory bdcr) internal returns(bool)
+    {
+        if(LibString.equal(bdcr.bdcrlx, ZRR))
+        {
+            if(bdcr.ccdcqk[0] == false)
+            {
+                return false;
+            }
+        }
+
+        if(bdcr.ccdcqk[1] == false)
+        {
+            return false;
+        }
+        if(bdcr.ccdcqk[2] == false)
+        {
+            return false;
+        }
+        if(bdcr.ccdcqk[3] == false)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    function aj_hghc_get_bdcr(BdcrInfo[] memory bdcrArray, uint num, string memory bdcr)
+        internal returns(uint)
+    {
+        for(uint i = 0; i < num; i++)
+        {
+            if(LibString.equal(bdcrArray[i].bdcr, bdcr))
+            {
+                return i;
+            }
+        }
+
+        return 0xFF;
+    }
+
     //对被执行人的住房公积金（仅对自然人）、金融理财产品、收益类保险、股息红利作过调查
     //财产调查表ccdc //bdcr被调查人 //dcnr调查内容
     function aj_hghc_jy4(string memory ajbs) internal returns(uint)
     {
+        string memory item;
+        string memory fullkey;
+        string memory prefix;
+        string memory item1;
+        BdcrInfo[] memory bdcrArray; //被调查人, map不能用
+        string memory dcrlx;
+        uint i = 0;
+        uint keyInx;
+        uint num;
 
+        keyInx = 0;
+        num = 0;
+        bdcrArray = new BdcrInfo[](MAX_BDCR);
+
+        for(i = 0; ; i++)
+        {
+            prefix = LibString.concat("jghinfo.ccdc.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".bdcr");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+            if(bytes(item).length == 0)
+            {
+                //不存在则结束查找
+                break;
+            }
+
+            fullkey = LibString.concat(prefix, ".dcnr");
+            item1 = czjl.aj_getInfo(ajbs, fullkey);
+
+            //获取被调查人类型
+            dcrlx = aj_hghc_bdcr_lx(ajbs, item);
+            if(bytes(dcrlx).length == 0)
+            {
+                break;
+            }
+            
+            keyInx = aj_hghc_get_bdcr(bdcrArray, num, item);
+            if(keyInx == 0xFF)
+            {
+                if(num >= MAX_BDCR)
+                {
+                    return RESULT_NOK;
+                }
+                bdcrArray[num].bdcr = item;
+                bdcrArray[num].bdcrlx = dcrlx;
+                num++;
+            }
+
+            if(LibString.equal(dcrlx, ZRR))
+            {
+                //自然人多调查公积金
+                if((bdcrArray[keyInx].ccdcqk[0] == false) &&
+                    (LibString.indexOf(item1, GJJ) == -1))
+                {
+                    bdcrArray[keyInx].ccdcqk[0] = true;
+                }
+            }
+            
+            //金融理财产品
+            if((bdcrArray[keyInx].ccdcqk[1] == false) &&
+                (LibString.indexOf(item1, JRLC) == -1))
+            {
+                bdcrArray[keyInx].ccdcqk[1] = true;
+            }
+            //收益类保险
+            if((bdcrArray[keyInx].ccdcqk[2] == false) &&
+                (LibString.indexOf(item1, SYLBX) == -1))
+            {
+                bdcrArray[keyInx].ccdcqk[2] = true;
+            }
+            //股息红利
+            if((bdcrArray[keyInx].ccdcqk[3] == false) &&
+                (LibString.indexOf(item1, GXHL) == -1))
+            {
+                bdcrArray[keyInx].ccdcqk[3] = true;
+            }
+        }
+
+        //判断多个调查人
+        for(i = 0; i < num; i++)
+        {
+            if(aj_hghc_check_result(bdcrArray[i]) == false)
+            {
+                return RESULT_NOK;
+            }
+        }
+
+        return RESULT_OK;
     }
 
     //没有未核实完毕的执行线索
@@ -144,7 +315,7 @@ contract HghcContract { //合规核查
         string memory itemValue;
         string memory key;
 
-        for(uint i = 0; i < MAX_ITEM; i++)
+        for(uint i = 0; ; i++)
         {
             key = LibString.concat("jghInfo.zxxs.", LibString.uint2str(i));
             key = LibString.concat(key, ".xszt");
@@ -171,7 +342,7 @@ contract HghcContract { //合规核查
         string memory itemValue;
         string memory key;
         
-        for(uint i = 0; i < MAX_ITEM; i++)
+        for(uint i = 0; ; i++)
         {
             key = LibString.concat("jghInfo.ycmcc.", LibString.uint2str(i));
             key = LibString.concat(key, ".cclx");
@@ -282,19 +453,17 @@ contract HghcContract { //合规核查
 
     }
 
-    //结案情况表jaqk
-    //jarq结案日期
-	//jafs结案方式
-    //jaws结案文书
-
-    //执行裁定书表zbnr_zxcds
-    //pjzw
+    //已作出终本裁定,执行裁定书表zbnr_zxcds
     function aj_hghc_jy10(string memory ajbs) internal returns(uint)
     {
-        //string memory itemValue;
-        //string memory key;
+        string memory item;
 
-
+        item = czjl.aj_getInfo(ajbs, "zdnrInfo.zxcds.0.ah");
+        if(bytes(item).length == 0)
+        {
+            return RESULT_NOK;
+        }
+        return RESULT_OK;
     }
 
     //执行主体信息表zxztxx(list)
