@@ -1,8 +1,6 @@
 pragma solidity >=0.4.22 <0.6.0;
 
-library LibString {
-using LibString for *;
-
+contract LibString {
     function concat(string memory _self, string memory _str) internal returns (string memory _ret) {
         uint idx = 0;
         uint i = 0;
@@ -44,7 +42,7 @@ using LibString for *;
     function toInt(string memory _self) internal returns (int _ret) {
         _ret = 0;
         if (bytes(_self).length == 0) {
-            return;
+            return _ret;
         }
         
         uint16 i;
@@ -68,11 +66,11 @@ using LibString for *;
         for (; i<bytes(_self).length; ++i) {
             digit = uint8(bytes(_self)[i]);
             if (!(digit >= 0x30 && digit <= 0x39)) {
-                return;
+                return _ret;
             }
             _ret = _ret*10 + int(digit-0x30);
         }
-        
+
         if (!positive) {
             _ret = -_ret;
         }

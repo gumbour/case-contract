@@ -58,12 +58,6 @@ contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查
             return true;
         }
 
-        //该案件在执行案件列表没有记录
-        /*if()
-        {
-
-        }*/
-
         values[0] = "1";
         czjl.aj_setResult(uuid, keys, values);
         return true;

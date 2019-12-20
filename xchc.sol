@@ -54,36 +54,112 @@ contract XchcContract { //案件瑕疵核查
         return index;
     }
 
+    function aj_hghc_blqx_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
+    {
+        uint index = pos;
+        string[2] memory resultK = ["jyx_id", "jyjg"];
+        string[2] memory resultV = ["0", "1"];
+
+        //jyx_id
+        keys[index] = resultK[0];
+        values[index] = LibString.uint2str(jyid);
+        index++;
+
+        //jyjg
+        keys[index] = resultK[1];
+        values[index] = resultV[result];
+        index++;
+        return index;
+    }
+
+    //接收案件后3日内完成执行通知节点
+    //执行通知节点和接收案件节点的结束日期不为空，且执行通知节点结束日期-接收案件节点结束日期≤3日；
+    function aj_xchc_blaxjy1(string memory ajbs) internal returns(uint)
+    {
+
+    }
+
+    //接收案件后10日内发起首次网络查控；
+    //执行流程节点表中的接收案件节点结束日期不为空，且网络查控信息表有记录，且最早的一条提起查询日期-接收案件节点结束日期≤10日；
+    function aj_xchc_blaxjy2(string memory ajbs) internal returns(uint)
+    {
+
+    }
+
+    //执行线索应在收到线索后7日内完成核实
+    //1、执行线索表无记录；2、执行线索表中有线索状态为09_05064-1的记录，且当前日期-线索提供日期≤7日；3、执行线索表中有记录，且线索状态都不为09_05064-1；
+    function aj_xchc_blaxjy5(string memory ajbs) internal returns(uint)
+    {
+
+    }
+
+
+    //限高日期应早于结案日期
+    //1、如果结案日期为空（未结案），强制限制表中，限制种类为【限制高消费】（09_05045-1）的所有记录的【开始日期】都在当前日期之前；当前日期-开始日期≥0
+    //2、如果结案日期不为空（已结案），强制限制表中，限制种类为【限制高消费】（09_05045-1）的所有记录的【开始日期】都在结案情况表中的结案日期之前；结案日期-开始日期≥0
+    function aj_xchc_blaxjy7(string memory ajbs) internal returns(uint)
+    {
+        string memory jarqItem;
+        string memory fullkey;
+        //xzgxf.jcrq
+
+        jarqItem = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
+        if(bytes(jarqItem).length == 0)
+        {
+
+        }
+
+        for(uint i = 0; i < MAX_ITEM; i++)
+        {
+            fullkey = LibString.concat("jghinfo.xzgxf.", LibString.uint2str(i));
+            fullkey = LibString.concat(fullkey, .ksrq“)
+            item = czjl.aj_getInfo(ajbs, "jghinfo.xzgxf.");
+        }
+        
+
+       //结案日期为空 xzgxf.xzzl "09_05045-1"   xzgxf.ksrq  now
+
+       //结案日期不为空, xzgxf.xzzl "09_05045-1" xzgxf.ksrq  jaqk.jarq
+
+    }
+
+    //执行期限届满日期前结案
+    //1、如果结案日期为空（未结案），执行期限届满日期-当前日期≥0；
+    //2、如果结案日期不为空（已结案），执行期限届满日期-结案日期≥0；
+    //3、如果办案期限表的执行期限届满日期为空，则从收案和立案信息表中取立案日期判断，结案日期-立案日期≤6个月；
+    //4、如果结案日期为空，则用当前核查日期进行计算
+    function aj_xchc_blaxjy12(string memory ajbs) internal returns(uint)
+    {
+
+    }
 
     //办理期限校验
-    function aj_xchc_blqxjy(string memory ajbs, string[] memory keys, string[] memory values, uint pos) internal returns(uint)
+    function aj_xchc_blqxjy(string memory ajbs, string[] memory keys, string[] memory values, uint posstart) internal returns(uint)
     {
-        //执行通知书、报告财产令 发出日期
-        //zdnrInfo.zxtzs.0.larq
-        //Jghinfo.Jaqk.jarq
+        uint pos = posstart;
+        uint ret = 0;
 
-        //Wlckxx.tqcxrq网络查控信息.提起查询日期
+        //校验1
+        ret = aj_xchc_blaxjy1(ajbs);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 1, ret);
 
-        //财产调查：有记录;搜查：无记录;悬赏执行：无记录;司法审计：无记录
+        //校验2
+        ret = aj_xchc_blaxjy2(ajbs);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 2, ret);
 
-        //对被执行人的住房公积金（仅对自然人）、金融理财产品、收益类保险、股息红利作过调查
+        //校验5
+        ret = aj_xchc_blaxjy5(ajbs);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 5, ret);
 
-        //没有未核实完毕的执行线索
+        //校验7
+        ret = aj_xchc_blaxjy7(ajbs);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 7, ret);
 
-        //未发现可供执行财产或发现的财产不能处置
+        //校验12
+        ret = aj_xchc_blaxjy12(ajbs);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 12, ret);
 
-        //已向被执行人发出限制消费令，并将符合条件的被执行人纳入失信被执行人名单
-
-        //已完成终本约谈且约谈日期必须早于结案日期
-
-        //尚未执行标的金额必须大于零
-
-        //已作出终本裁定
-
-        //不存在被执行人都已死亡情形
-
-        //执行标的内容不能仅为行为执行
-        
+        return pos;
     }
 
     //卷宗院印校验
@@ -133,7 +209,7 @@ contract XchcContract { //案件瑕疵核查
         pos = aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_XCDCBL);
 
         //搜查令
-        ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.scl.", "qm");
+        ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.scl.", "yy");
         pos = aj_xchc_yy_jl(keys, values, pos, 2, ret, LCJD_SCL);
         
 
@@ -189,8 +265,8 @@ contract XchcContract { //案件瑕疵核查
 
     function aj_xchc(string memory ajbs, uint64 uuid) public returns(bool)
     {
-        string[] memory keys = new string[](50);
-        string[] memory values = new string[](50);
+        string[] memory keys = new string[](100);
+        string[] memory values = new string[](100);
         uint pos = 0;
         
         //1 办理期限校验
