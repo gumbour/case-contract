@@ -1,6 +1,6 @@
 pragma solidity >=0.4.22 <0.6.0;
 
-contract LibString {
+library LibString {
     function concat(string memory _self, string memory _str) internal returns (string memory _ret) {
         uint idx = 0;
         uint i = 0;

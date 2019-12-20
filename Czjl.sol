@@ -20,7 +20,7 @@ contract CzjlContract { //操作记录
         return true;
     }
 
-    function aj_getInfo(string memory ajbs, string memory key) public view returns(string memory _ret)
+    function aj_getInfo(string memory ajbs, string memory key) public returns(string memory _ret)
     {
         _ret = czjl[ajbs][key];
     }
