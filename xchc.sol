@@ -34,7 +34,7 @@ contract XchcContract { //案件瑕疵核查
     function aj_xchc_yy_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint lcjd_id) internal returns(uint)
     {
         uint index = pos;
-        string[3] memory resultK = ["jyx_id", "jyjg", "lcjd_id"];
+        string[3] memory resultK = ["jzyy.jyx_id", "jzyy.jyjg", "jzyy.lcjd_id"];
         string[4] memory resultV = ["0", "1", "2", "3"];
 
         //jyx_id
@@ -57,7 +57,7 @@ contract XchcContract { //案件瑕疵核查
     function aj_hghc_blqx_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
     {
         uint index = pos;
-        string[2] memory resultK = ["jyx_id", "jyjg"];
+        string[2] memory resultK = ["blqxjy.jyx_id", "blqxjy.jyjg"];
         string[2] memory resultV = ["0", "1"];
 
         //jyx_id
@@ -90,9 +90,36 @@ contract XchcContract { //案件瑕疵核查
     //1、执行线索表无记录；2、执行线索表中有线索状态为09_05064-1的记录，且当前日期-线索提供日期≤7日；3、执行线索表中有记录，且线索状态都不为09_05064-1；
     function aj_xchc_blaxjy5(string memory ajbs) internal returns(uint)
     {
+        string memory prefix;
+        string memory fullkey;
+        string memory item;
+        uint xstgrq = 0;
 
+        for(uint i = 0; i < MAX_ITEM; i++)
+        {
+            prefix = LibString.concat("jghinfo.zxxs.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".xszt");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+
+            if(bytes(item).length == 0)
+            {
+                break;
+            }
+
+            if(LibString.equal(item, "09_05064-1"))
+            {
+                fullkey = LibString.concat(prefix, ".xstgrq");
+                item = czjl.aj_getInfo(ajbs, fullkey);
+                xstgrq = LibString.toUint(item);
+                if(now > xstgrq + 7*24*3600)
+                {
+                    return RESULT_NOK;
+                }
+            }
+        }
+
+        return RESULT_OK;
     }
-
 
     //限高日期应早于结案日期
     //1、如果结案日期为空（未结案），强制限制表中，限制种类为【限制高消费】（09_05045-1）的所有记录的【开始日期】都在当前日期之前；当前日期-开始日期≥0
@@ -102,25 +129,17 @@ contract XchcContract { //案件瑕疵核查
     {
         string memory item;
         string memory fullkey;
-        string memory prex;
-        bool bHasJarq = true;
+        string memory prefix;
         uint jarq = 0;
         uint ksrq = 0;
 
         item = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
-        if(bytes(item).length == 0)
-        {
-            bHasJarq = false;
-        }
-        else
-        {
-            jarq = LibString.toUint(item);
-        }
+        jarq = LibString.toUint(item);
 
         for(uint i = 0; i < MAX_ITEM; i++)
         {
-            prex = LibString.concat("jghinfo.xzgxf.", LibString.uint2str(i));
-            fullkey = LibString.concat(prex, ".xzzl");
+            prefix = LibString.concat("jghinfo.xzgxf.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".xzzl");
             item = czjl.aj_getInfo(ajbs, fullkey);
 
             if(bytes(item).length == 0)
@@ -130,16 +149,16 @@ contract XchcContract { //案件瑕疵核查
 
             if(LibString.equal(item, "09_05045-1"))
             {
-                fullkey = LibString.concat(prex, ".ksrq");
+                fullkey = LibString.concat(prefix, ".ksrq");
                 item = czjl.aj_getInfo(ajbs, fullkey);
                 ksrq = LibString.toUint(item);
 
-                if((bHasJarq == false) && (now < ksrq))
+                if((jarq == 0) && (now < ksrq))
                 {
                     return RESULT_NOK;
                 }
 
-                if((bHasJarq == true) && (ksrq > jarq))
+                if((jarq != 0) && (ksrq > jarq))
                 {
                     return RESULT_NOK;
                 }
@@ -167,7 +186,7 @@ contract XchcContract { //案件瑕疵核查
         item = czjl.aj_getInfo(ajbs, "jghinfo.baqx.zxqxjmrq");
         zxqxjmrq = LibString.toUint(item);
 
-        if((jarq == 0) && (zxqxjmrq >= now)
+        if((jarq == 0) && (zxqxjmrq >= now))
         {
             return RESULT_OK;
         }
@@ -183,14 +202,14 @@ contract XchcContract { //案件瑕疵核查
             larq = LibString.toUint(item);
             if(jarq != 0)
             {
-                if(jarq <= larq + 6*30*24*60*60)
+                if(jarq <= larq + 6*30*24*3600)
                 {
                     return RESULT_OK;
                 }
             }
-            else if(now <= larq + 6*30*24*60*60)
+            else if(now <= larq + 6*30*24*3600)
             {
-                returns RESULT_OK;
+                return RESULT_OK;
             }
         }
         
