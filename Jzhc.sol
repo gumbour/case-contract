@@ -31,7 +31,7 @@ contract JzhcContract { //卷宗核查
     function aj_jzhc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint lcjd_id) internal returns(uint)
     {
         uint index = pos;
-        string[3] memory resultK = ["jyx_id", "jyjg", "lcjd_id"];
+        string[3] memory resultK = ["jzywjy.jyx_id", "jzywjy.jyjg", "jzywjy.lcjd_id"];
         string[4] memory resultV = ["0", "1", "2", "3"];
 
         //jyx_id

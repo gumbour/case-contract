@@ -21,7 +21,7 @@ contract HghcContract { //合规核查
     function aj_hghc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
     {
         uint index = pos;
-        string[2] memory resultK = ["jyx_id", "jyjg"];
+        string[2] memory resultK = ["hgxjy.jyx_id", "hgxjy.jyjg"];
         string[2] memory resultV = ["0", "1"];
 
         //jyx_id
