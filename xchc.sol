@@ -80,14 +80,44 @@ contract XchcContract { //案件瑕疵核查
     //执行通知节点和接收案件节点的结束日期不为空，且执行通知节点结束日期-接收案件节点结束日期≤3日；
     function aj_xchc_blaxjy1(string memory ajbs) internal returns(uint)
     {
+        string memory item;
+        uint jsaj_jsrq = 0;
+        uint zxtz_jsrq = 0;
 
+        item = czjl.aj_getInfo(ajbs, "jghInfo.zxlcjd.jsajjd.jsrq");
+        jsaj_jsrq = LibString.toUint(item);
+
+        item = czjl.aj_getInfo(ajbs, "jghInfo.zxlcjd.zxtzjd.jsrq");
+        zxtz_jsrq = LibString.toUint(item);
+
+        if((jsaj_jsrq != 0) && (zxtz_jsrq != 0) && (zxtz_jsrq <= jsaj_jsrq + 3*3600))
+        {
+            return RESULT_OK;
+        }
+
+        return RESULT_NOK;
     }
 
     //接收案件后10日内发起首次网络查控；
     //执行流程节点表中的接收案件节点结束日期不为空，且网络查控信息表有记录，且最早的一条提起查询日期-接收案件节点结束日期≤10日；
     function aj_xchc_blaxjy2(string memory ajbs) internal returns(uint)
     {
+        string memory item;
+        uint jsaj_jsrq = 0;
+        uint wlck_tqcxrq = 0;
 
+        item = czjl.aj_getInfo(ajbs, "jghInfo.zxlcjd.jsajjd.jsrq");
+        jsaj_jsrq = LibString.toUint(item);
+
+        item = czjl.aj_getInfo(ajbs, "jghInfo.wlckxx.0.tqcxrq");
+        wlck_tqcxrq = LibString.toUint(item);
+
+        if((jsaj_jsrq != 0) && (wlck_tqcxrq != 0) && (wlck_tqcxrq <= jsaj_jsrq + 10*3600))
+        {
+            return RESULT_OK;
+        }
+
+        return RESULT_NOK;
     }
 
     //执行线索应在收到线索后7日内完成核实

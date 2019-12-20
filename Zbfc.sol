@@ -39,7 +39,7 @@ contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查
             return true;
         }
         //结案日期+(n-1)*3个月<=当前日期<=结案日期+n*3个月
-        if((jqrqUnix + (wlcks*3 - 1*3) > now) || (now > wlcks * 3))
+        if((jqrqUnix + wlcks*3 > now + 1*3) || (now > wlcks * 3))
         {
             czjl.aj_setResult(uuid, keys, values);
             return true;
