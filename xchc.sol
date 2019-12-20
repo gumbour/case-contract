@@ -26,6 +26,10 @@ contract XchcContract { //案件瑕疵核查
     uint constant LCJD_ZBCDS = 74;//终本裁定书
     uint constant LCJD_ZJBLQKB = 75;//终结本次执行程序案件办理情况表
     uint constant LCJD_SXJDS = 77;//失信决定书
+    uint constant SIX_MONTHS = 6*30*24*3600;
+
+    //线索状态为正在核实中标识
+    string constant ZZHSZ = "09_05064-1";
 
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
@@ -106,7 +110,8 @@ contract XchcContract { //案件瑕疵核查
                 break;
             }
 
-            if(LibString.equal(item, "09_05064-1"))
+            //正在核实中
+            if(LibString.equal(item, ZZHSZ))
             {
                 fullkey = LibString.concat(prefix, ".xstgrq");
                 item = czjl.aj_getInfo(ajbs, fullkey);
@@ -202,12 +207,12 @@ contract XchcContract { //案件瑕疵核查
             larq = LibString.toUint(item);
             if(jarq != 0)
             {
-                if(jarq <= larq + 6*30*24*3600)
+                if(jarq <= larq + SIX_MONTHS)
                 {
                     return RESULT_OK;
                 }
             }
-            else if(now <= larq + 6*30*24*3600)
+            else if(now <= larq + SIX_MONTHS)
             {
                 return RESULT_OK;
             }
