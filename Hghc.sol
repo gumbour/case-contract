@@ -427,21 +427,22 @@ contract HghcContract { //合规核查
     //划拨金额hbje
     function aj_hghc_jy9(string memory ajbs) internal returns(uint)
     {
-        string memory itemValue;
-        int jabdje = 0;
-        int sjdwje = 0;
+        string memory item;
 
         //尚未执行标的金额 > 0
-        itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.swzxbdje");
-        if(LibString.toInt(itemValue) > 0)
+        item = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.swzxbdje");
+        if(LibString.toInt(item) > 0)
         {
             return RESULT_OK;
         }
         
+        return RESULT_NOK;
         //结案标的金额 -实际到位金额 >0
-        itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.jabdje");
-        jabdje = LibString.toInt(itemValue);
-        itemValue = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.sjdwje");
+        /*int jabdje = 0;
+        int sjdwje = 0;
+        item = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.jabdje");
+        jabdje = LibString.toInt(item);
+        item = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.sjdwje");
         if(jabdje > sjdwje)
         {
             return RESULT_OK;
@@ -450,7 +451,7 @@ contract HghcContract { //合规核查
         //应执行标的金额+迟延履行金+迟延履行利息-实际到位金额>0
 
         //[应执行标的金额]+[迟延履行金]+[迟延履行利息]-【划拨-划拨总额】-【拍卖-成交总额】-【变卖-变卖总额】-【以物抵债-折抵总额】
-
+        */
     }
 
     //已作出终本裁定,执行裁定书表zbnr_zxcds
