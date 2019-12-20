@@ -96,31 +96,56 @@ contract XchcContract { //案件瑕疵核查
 
     //限高日期应早于结案日期
     //1、如果结案日期为空（未结案），强制限制表中，限制种类为【限制高消费】（09_05045-1）的所有记录的【开始日期】都在当前日期之前；当前日期-开始日期≥0
-    //2、如果结案日期不为空（已结案），强制限制表中，限制种类为【限制高消费】（09_05045-1）的所有记录的【开始日期】都在结案情况表中的结案日期之前；结案日期-开始日期≥0
+    //2、如果结案日期不为空（已结案），强制限制表中，限制种类为【限制高消费】（09_05045-1）的所有记录的【开始日期】
+    //都在结案情况表中的结案日期之前；结案日期-开始日期≥0
     function aj_xchc_blaxjy7(string memory ajbs) internal returns(uint)
     {
-        string memory jarqItem;
+        string memory item;
         string memory fullkey;
-        //xzgxf.jcrq
+        string memory prex;
+        bool bHasJarq = true;
+        uint jarq = 0;
+        uint ksrq = 0;
 
-        jarqItem = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
-        if(bytes(jarqItem).length == 0)
+        item = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
+        if(bytes(item).length == 0)
         {
-
+            bHasJarq = false;
+        }
+        else
+        {
+            jarq = LibString.toUint(item);
         }
 
         for(uint i = 0; i < MAX_ITEM; i++)
         {
-            fullkey = LibString.concat("jghinfo.xzgxf.", LibString.uint2str(i));
-            fullkey = LibString.concat(fullkey, .ksrq“)
-            item = czjl.aj_getInfo(ajbs, "jghinfo.xzgxf.");
+            prex = LibString.concat("jghinfo.xzgxf.", LibString.uint2str(i));
+            fullkey = LibString.concat(prex, ".xzzl");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+
+            if(bytes(item).length == 0)
+            {
+                break;
+            }
+
+            if(LibString.equal(item, "09_05045-1"))
+            {
+                fullkey = LibString.concat(prex, ".ksrq");
+                item = czjl.aj_getInfo(ajbs, fullkey);
+                ksrq = LibString.toUint(item);
+
+                if((bHasJarq == false) && (now < ksrq))
+                {
+                    return RESULT_NOK;
+                }
+
+                if((bHasJarq == true) && (ksrq > jarq))
+                {
+                    return RESULT_NOK;
+                }
+            }
         }
-        
-
-       //结案日期为空 xzgxf.xzzl "09_05045-1"   xzgxf.ksrq  now
-
-       //结案日期不为空, xzgxf.xzzl "09_05045-1" xzgxf.ksrq  jaqk.jarq
-
+        return RESULT_OK;
     }
 
     //执行期限届满日期前结案
@@ -130,7 +155,46 @@ contract XchcContract { //案件瑕疵核查
     //4、如果结案日期为空，则用当前核查日期进行计算
     function aj_xchc_blaxjy12(string memory ajbs) internal returns(uint)
     {
+        string memory item;
+        uint jarq = 0;
+        uint zxqxjmrq = 0;
+        uint larq = 0;
 
+        //不存在时toUint会返回0
+        item = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
+        jarq = LibString.toUint(item);
+
+        item = czjl.aj_getInfo(ajbs, "jghinfo.baqx.zxqxjmrq");
+        zxqxjmrq = LibString.toUint(item);
+
+        if((jarq == 0) && (zxqxjmrq >= now)
+        {
+            return RESULT_OK;
+        }
+
+        if((jarq != 0) && (zxqxjmrq >= jarq))
+        {
+            return RESULT_OK;
+        }
+
+        if(zxqxjmrq == 0)
+        {
+            item = czjl.aj_getInfo(ajbs, "jghinfo.sahlaxx.larq");
+            larq = LibString.toUint(item);
+            if(jarq != 0)
+            {
+                if(jarq <= larq + 6*30*24*60*60)
+                {
+                    return RESULT_OK;
+                }
+            }
+            else if(now <= larq + 6*30*24*60*60)
+            {
+                returns RESULT_OK;
+            }
+        }
+        
+        return RESULT_NOK;
     }
 
     //办理期限校验

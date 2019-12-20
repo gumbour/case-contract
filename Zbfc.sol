@@ -20,22 +20,9 @@ contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
 
-    /*function aj_sxzzajlb(uint64 uuid) public returns(bool)
-    {
-        string memory ret = "{\"zxtzs\":\"ok\",\"bgccl\":\"nok\",\"sdhz\":\"ok\"}";
-        sxzzajlbjg[uuid] = ret;
-        return true;
-    }
-
-    function aj_sxzzajlbjg(uint64 uuid) public view returns(string memory _ret)
-    {
-        _ret = sxzzajlbjg[uuid];
-    }*/
-
     function aj_sxzbdfcajlb(string memory ajbs, string memory jarq, uint wlcks, uint64 uuid) public returns(bool)
     {
         uint jqrqUnix = LibString.toUint(jarq);
-        uint cur = now;
         string[] memory keys = new string[](1);
         string[] memory values = new string[](1);
         string memory itemValue;
@@ -52,7 +39,7 @@ contract zbfcContract { //终本复查:筛选在执案件列表, 筛选待复查
             return true;
         }
         //结案日期+(n-1)*3个月<=当前日期<=结案日期+n*3个月
-        if((jqrqUnix + (wlcks - 1)*3 > cur) || (cur > wlcks * 3))
+        if((jqrqUnix + (wlcks*3 - 1*3) > now) || (now > wlcks * 3))
         {
             czjl.aj_setResult(uuid, keys, values);
             return true;
