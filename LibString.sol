@@ -82,6 +82,45 @@ library LibString {
 
     function equal(string memory _self, string memory str) internal returns(bool)
     {
-        return keccak256(bytes(_self)) == keccak256(bytes(str));
+        bytes memory _baseBytes = bytes(_self);
+        bytes memory _valueBytes = bytes(str);
+
+        if (_baseBytes.length != _valueBytes.length) {
+            return false;
+        }
+
+        for (uint i = 0; i < _baseBytes.length; i++) {
+            if (_baseBytes[i] != _valueBytes[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
+
+    function _indexOf(string memory _base, string memory _value, uint _offset)
+        internal
+        pure
+        returns (int) {
+        bytes memory _baseBytes = bytes(_base);
+        bytes memory _valueBytes = bytes(_value);
+
+        assert(_valueBytes.length == 1);
+
+        for (uint i = _offset; i < _baseBytes.length; i++) {
+            if (_baseBytes[i] == _valueBytes[0]) {
+                return int(i);
+            }
+        }
+
+        return -1;
+    }
+
+    function indexOf(string memory _base, string memory _value)
+        internal
+        pure
+        returns (int) {
+        return _indexOf(_base, _value, 0);
+    }
+
 }

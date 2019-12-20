@@ -14,6 +14,13 @@ contract HghcContract { //合规核查
     uint constant MAX_ITEM = 30;
     uint constant RESULT_NOK = 0;
     uint constant RESULT_OK = 1;
+    string constant XW = "09_ZX0008-3"; //执行标的内容-行为的标识
+    string constant BZXR = "09_05036-2"; //被执行人
+    string constant ZRR = "09_01001-1";//自然人标识
+    string constant FR = "09_01001-2"; //法人标识
+    string constant FFRZZ = "09_01001-3"; //非法人组织标识
+    string constant SW = "死亡";
+
 
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
@@ -290,27 +297,69 @@ contract HghcContract { //合规核查
 
     }
 
-    //执行主体信息表zxztxx
+    //执行主体信息表zxztxx(list)
     //dsr当事人
 	//dsrfldw当事人地位
 	//dsrlx当事人类型
 	//sfyzjg身份验证结果
     function aj_hghc_jy11(string memory ajbs) internal returns(uint)
     {
-        //string memory itemValue;
-        //string memory key;
+        string memory item;
+        string memory fullkey;
+        string memory prefix;
 
+        for(uint i = 0; ; i++)
+        {
+            prefix = LibString.concat("jghinfo.zxztxx.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".dsrfldw");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+            if(bytes(item).length == 0)
+            {
+                //不存在则结束查找
+                break;
+            }
 
+            if(LibString.equal(item, BZXR))
+            {
+                fullkey = LibString.concat(prefix, ".dsrlx");
+                item = czjl.aj_getInfo(ajbs, fullkey);
+
+                if(LibString.equal(item ,FR) || LibString.equal(item ,FFRZZ))
+                {
+                    return RESULT_OK;
+                }
+            }
+            else if(LibString.equal(item, ZRR))
+            {
+                fullkey = LibString.concat(prefix, ".sfyzjg");
+                item = czjl.aj_getInfo(ajbs, fullkey);
+                //身份验证不含死亡
+                if(LibString.indexOf(item, SW) == -1)
+                {
+                    return RESULT_OK;
+                }
+            }
+        }
+        return RESULT_NOK;
     }
 
-    //收案和立案信息表sahlaxx
+    //收案和立案信息表sahlaxx(object)
     //zxbdnr执行标的内容
     function aj_hghc_jy12(string memory ajbs) internal returns(uint)
     {
-        //string memory itemValue;
-        //string memory key;
+        string memory item;
 
+        item = czjl.aj_getInfo(ajbs, "jghinfo.sahlaxx.zxbdnr");
+        if(bytes(item).length == 0)
+        {
+            return RESULT_NOK;
+        }
+        if(LibString.equal(item, XW))
+        {
+            return RESULT_OK;
+        }
 
+        return RESULT_NOK;
     }
 
     //合规核查, 核查2和3需要内容结果?
@@ -322,8 +371,6 @@ contract HghcContract { //合规核查
         uint pos = 0;
         
         //检验项1
-        //执行通知书有无记录zxtz, 发起执行通知书日期和报告财产令
-        
         ret = aj_hghc_jy1(ajbs);
         pos = aj_hghc_jl(keys, values, pos, 1, ret);
 

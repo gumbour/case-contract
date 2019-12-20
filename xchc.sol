@@ -281,14 +281,14 @@ contract XchcContract { //案件瑕疵核查
     }
 
     //卷宗院印校验
-    function aj_xchc_yy_jylist(string memory ajbs, string memory prex, string memory key) internal returns(uint)
+    function aj_xchc_yy_jylist(string memory ajbs, string memory prefix, string memory key) internal returns(uint)
     {
         string memory item;
         string memory fullkey;
 
-        for(uint i = 0; i < MAX_ITEM; i++)
+        for(uint i = 0; ; i++)
         {
-            fullkey = LibString.concat(prex, LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, LibString.uint2str(i));
             fullkey = LibString.concat(fullkey, key);
             item = czjl.aj_getInfo(ajbs, fullkey);
             if(bytes(item).length == 0)
