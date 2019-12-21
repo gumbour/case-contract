@@ -80,6 +80,32 @@ library LibString {
         return uint(toInt(_self));
     }
 
+    // parseInt(parseFloat*10^_b)
+    function parseInt(string memory _a, uint _b) internal pure returns (int) {
+        bytes memory bresult = bytes(_a);
+        int mint = 0;
+        bool decimals = false;
+        bool negative = false;
+        uint b = _b;
+
+        for (uint i = 0; i < bresult.length; i++){
+            if ((i == 0) && (bresult[i] == '-')) {
+                negative = true;
+            }
+            if ((uint8(bresult[i]) >= 48) && (uint8(bresult[i]) <= 57)) {
+                if (decimals){
+                   if (b == 0) break;
+                    else b--;
+                }
+                mint *= 10;
+                mint += uint8(bresult[i]) - 48;
+            } else if (uint8(bresult[i]) == 46) decimals = true;
+        }
+        if (b > 0) mint *= int(10**b);
+        if (negative) mint *= -1;
+        return mint;
+    }
+
     function equal(string memory _self, string memory str) internal returns(bool)
     {
         bytes memory _baseBytes = bytes(_self);

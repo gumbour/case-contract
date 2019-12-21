@@ -32,6 +32,10 @@ contract HghcContract { //合规核查
     string constant GJJ = "公积金";
     string constant SYLBX = "收益类保险";
     string constant GXHL = "股息红利";
+    string constant YHCK = "09_ZX0015-2"; //财产类型为银行存款标识
+    string constant HLWJR = "09_ZX0015-3"; //财产类型为互联网金融标识
+
+    int  constant FDSDW  = 10000;
 
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
@@ -339,22 +343,56 @@ contract HghcContract { //合规核查
     //cclx财产类型 //ccmc财产名称 //cczbjg财产甄别结果 //cczt财产状态 //ccbkzxyy财产不可执行原因
     function aj_hghc_jy6(string memory ajbs) internal returns(uint)
     {
-        string memory itemValue;
+        string memory item;
         string memory key;
+        string memory prefix;
+        int zhje = 0;
+        int yzxbdje = 0;
         
         for(uint i = 0; ; i++)
         {
-            key = LibString.concat("jghInfo.ycmcc.", LibString.uint2str(i));
-            key = LibString.concat(key, ".cclx");
+            prefix = LibString.concat("jghInfo.ycmcc.", LibString.uint2str(i));
+            key = LibString.concat(prefix, ".cclx");
 
-            itemValue = czjl.aj_getInfo(ajbs, key);
-            if(bytes(itemValue).length == 0)
+            item = czjl.aj_getInfo(ajbs, key);
+            if(bytes(item).length == 0)
             {
                 break;
             }
 
-            /*------------------------------
-            */
+            /*(1)财产类型为银行存款或互联网金融 (2)账户余额小于1000 (3)账户余额除以应执行标的金额≤5%*/
+            if(LibString.equal(item, YHCK) || LibString.equal(item, HLWJR))
+            {
+                //获取账号余额 满足条件则continue;
+                key = LibString.concat(prefix, ".ccmc");
+                item = czjl.aj_getInfo(ajbs, key);  //todo 财产名称中可以提取金额------
+
+                //4位小数
+                zhje = LibString.parseInt(item, 4);
+
+                //账户余额小于1000 && 账户余额除以应执行标的金额≤5%
+                item = czjl.aj_getInfo(ajbs, "jghInfo.sahlaxx.yzxbdje");
+                yzxbdje = LibString.parseInt(item, 4);
+
+                if((zhje < 1000*FDSDW) && (zhje*100 <= yzxbdje*5))
+                {
+                    continue;
+                }
+                //不满足条件则继续下面的检查
+            }
+
+            //记录中的【财产不可执行原因】字段都不为空
+            key = LibString.concat(prefix, ".ccbkzxyy");
+            item = czjl.aj_getInfo(ajbs, key);
+            if(bytes(item).length != 0)
+            {
+                continue;
+            }
+
+            /*该财产可关联对应到处置结果信息：即拍卖表-成交价格/拍卖日期!=''或变卖表-变卖总额/变卖结束日期!=''
+            或以物抵债表-折抵金额/折抵日期!=''或划拨表-划拨金额/划拨日期!=''
+            或强制管理表-开始日期!=''或扣留提取表-扣留提取金额/扣留或提取日期!=''*/
+
         }
         return RESULT_OK;
     }
@@ -374,7 +412,11 @@ contract HghcContract { //合规核查
     {
         //string memory itemValue;
         //string memory key;
+        /*1、法律地位为被执行人的当事人类型为自然人，则当事人序号与限制高消费表中的【被限制人】序号一一对应，
+          且【限制种类】字段包含[限制高消费],且【解除日期】都为空或字段值>结案日期/当前日期；*/
 
+        /*2、法律地位为被执行人的当事人类型为非自然人的被执行人有几个,
+        在限制高消费表中的【被限制人】序号中至少有几个四位数序号*/
 
     }
 
@@ -435,7 +477,7 @@ contract HghcContract { //合规核查
         {
             return RESULT_OK;
         }
-        
+
         return RESULT_NOK;
         //结案标的金额 -实际到位金额 >0
         /*int jabdje = 0;
