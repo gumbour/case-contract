@@ -17,7 +17,7 @@ contract HghcContract { //合规核查
     uint constant RESULT_OK = 1;
     string constant XW = "09_ZX0008-3"; //执行标的内容-行为的标识
     string constant BZXR = "09_05036-2"; //被执行人
-    string constant SQR = "09_05036-1";
+    string constant SQR = "09_05036-1"; //申请人
     string constant ZRR = "09_01001-1";//自然人标识
     string constant FR = "09_01001-2"; //法人标识
     string constant FFRZZ = "09_01001-3"; //非法人组织标识
@@ -36,9 +36,6 @@ contract HghcContract { //合规核查
     string constant YHCK = "09_ZX0015-2"; //财产类型为银行存款标识
     string constant HLWJR = "09_ZX0015-3"; //财产类型为互联网金融标识
     string constant RMFY = "人民法院";
-
-    
-
     int  constant FDSDW  = 10000;
 
     address public czjlAddr;
@@ -103,25 +100,96 @@ contract HghcContract { //合规核查
     //jarq结案日期
     function aj_hghc_jy2(string memory ajbs) internal returns(uint)
     {
-        string memory itemValue;
-        string memory key;
+        string memory item;
+        string memory fullkey;
+        string memory prefix;
+        uint jarq = 0;
+        uint tqcxrq = 0;
+        uint i = 0;
+        uint j = 0;
+        bool bRh;
+        bool bCxfw;
+        bool bHasNotLwqk;
+        string[9] memory dsrly = ["村委会","村民委员会","居民委员会","村民小组","居民小组","业主委员会","业委会","业主大会","分公司"];
+        string[6] memory cxfw = ["商业银行","证券","互联网银行","车辆","不动产","工商总局"];
 
-        for(uint i = 0; ; i++)
+        bRh = false;
+        bCxfw = false;
+        bHasNotLwqk = false;
+
+        item = czjl.aj_getInfo(ajbs, "jghInfo.jaqk.jarq");
+        jarq = LibString.toUint(item);
+
+        //例外 法律地位为被执行人的当事人，名称中含有“村委会”“居委会”“村民委员会”“居民委员会”
+        //“村民小组”“居民小组”“业主委员会”“业委会”“业主大会”“分公司”之一；且组织机构代码=''
+        for(i = 0; ; i++)
         {
-            key = LibString.concat("jghInfo.wlckxx.", LibString.uint2str(i));
-            key = LibString.concat(key, ".tqcxrq");
-
-            itemValue = czjl.aj_getInfo(ajbs, key);
-            if(bytes(itemValue).length == 0)
+            prefix = LibString.concat("jghInfo.wlckxx.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".dsr");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+            if(bytes(item).length == 0)
             {
                 break;
             }
 
-            //判断日期是否在三个月内
-            //itemValue //LibString.toUint(itemValue)
-            //now()
+            //todo 组织机构代码 如何得到---------
+            for(j = 0; j < dsrly.length; j++)
+            {
+                if(LibString.indexOf(item, dsrly[i]) != -1)
+                {
+                    continue;//例外情况
+                }
+            }
+
+            bHasNotLwqk = true;
+
+            fullkey = LibString.concat(prefix, ".tqcxrq");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+            tqcxrq = LibString.toUint(item);
+
+            if(jarq == 0)
+            {
+                jarq = now;
+            }
+
+            //提起查询时间和结案日期的差≤3个月+1天
+            if(tqcxrq <= jarq + 91*24*3600)
+            {
+                fullkey = LibString.concat(prefix, ".cxfw");
+                item = czjl.aj_getInfo(ajbs, fullkey);
+                if(bCxfw == false)
+                {
+                    //查询范围字段含有特定字符
+                    for(j = 0; j < cxfw.length; j++)
+                    {
+                        if(LibString.indexOf(item, cxfw[i]) == -1)
+                        {
+                            break;
+                        }
+                    }
+                    if(j == cxfw.length)
+                    {
+                        bCxfw = true;
+                    }
+                }
+                
+                if((bRh == false) && (LibString.equal(item, "人行")))
+                {
+                    bRh = true;
+                }
+
+                if((bCxfw == true) && (bRh == true))
+                {
+                    return RESULT_OK;
+                }
+            }
         }
 
+        //有非例外的情况, 没有通过判断条件
+        if(bHasNotLwqk == true)
+        {
+            return RESULT_NOK;
+        }
         return RESULT_OK;
     }
     
@@ -479,7 +547,7 @@ contract HghcContract { //合规核查
             }
         }
 
-        //收案和立案信息表中的立案案由为salayy中的一项
+        //例外3 收案和立案信息表中的立案案由为salayy中的一项
         for(i = 0; i < salaay.length; i++)
         {
             item = czjl.aj_getInfo(ajbs, "jghinfo.sahlaxx.laay");
@@ -488,8 +556,6 @@ contract HghcContract { //合规核查
                 return RESULT_OK;
             }
         }
-
-        //例外3 申请执行人申请终结本次执行程序
 
         item = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
         
