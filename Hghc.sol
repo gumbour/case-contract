@@ -17,6 +17,7 @@ contract HghcContract { //合规核查
     uint constant RESULT_OK = 1;
     string constant XW = "09_ZX0008-3"; //执行标的内容-行为的标识
     string constant BZXR = "09_05036-2"; //被执行人
+    string constant SQR = "09_05036-1";
     string constant ZRR = "09_01001-1";//自然人标识
     string constant FR = "09_01001-2"; //法人标识
     string constant FFRZZ = "09_01001-3"; //非法人组织标识
@@ -34,6 +35,9 @@ contract HghcContract { //合规核查
     string constant GXHL = "股息红利";
     string constant YHCK = "09_ZX0015-2"; //财产类型为银行存款标识
     string constant HLWJR = "09_ZX0015-3"; //财产类型为互联网金融标识
+    string constant RMFY = "人民法院";
+
+    
 
     int  constant FDSDW  = 10000;
 
@@ -351,6 +355,7 @@ contract HghcContract { //合规核查
         
         for(uint i = 0; ; i++)
         {
+            //以查明财产
             prefix = LibString.concat("jghInfo.ycmcc.", LibString.uint2str(i));
             key = LibString.concat(prefix, ".cclx");
 
@@ -389,10 +394,11 @@ contract HghcContract { //合规核查
                 continue;
             }
 
+            return RESULT_NOK;
+            /*todo关联表无法拿到, 先不做下面逻辑*/
             /*该财产可关联对应到处置结果信息：即拍卖表-成交价格/拍卖日期!=''或变卖表-变卖总额/变卖结束日期!=''
             或以物抵债表-折抵金额/折抵日期!=''或划拨表-划拨金额/划拨日期!=''
             或强制管理表-开始日期!=''或扣留提取表-扣留提取金额/扣留或提取日期!=''*/
-
         }
         return RESULT_OK;
     }
@@ -438,10 +444,83 @@ contract HghcContract { //合规核查
     //sftyzb是否同意终本
     function aj_hghc_jy8(string memory ajbs) internal returns(uint)
     {
-        //string memory itemValue;
-        //string memory key;
+        string memory item;
+        string memory prefix;
+        string memory fullkey;
+        uint i = 0;
+        uint ytsj = 0;
+        uint pdsj = 0;
+        string[13] memory salaay = ["3201","3202","3203","3204","3205","3234","3235","3230","3231","3366","3367","3232","3233"];
 
+        //首先进行例外检查, 满足例外则认为满足
+        //例外1 申请执行人申请终结本次执行程序
+        item = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.sqrsqzjbczxcx");
+        if(LibString.equal(item, "1"))
+        {
+            return RESULT_OK;
+        }
+        
+        //例外2 法律地位为申请执行人的当事人，名称里含有【人民法院】关键字
+        for(i = 0; ; i++)
+        {
+            prefix = LibString.concat("jghinfo.zxztxx.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".dsrfldw");
+            item = czjl.aj_getInfo(ajbs, fullkey);
 
+            if(LibString.equal(item, SQR))
+            {
+                fullkey = LibString.concat(prefix, ".dsr");
+                item = czjl.aj_getInfo(ajbs, fullkey);
+
+                if(LibString.indexOf(item, RMFY) != -1)
+                {
+                    return RESULT_OK;
+                }
+            }
+        }
+
+        //收案和立案信息表中的立案案由为salayy中的一项
+        for(i = 0; i < salaay.length; i++)
+        {
+            item = czjl.aj_getInfo(ajbs, "jghinfo.sahlaxx.laay");
+            if(LibString.equal(item, salaay[i]))
+            {
+                return RESULT_OK;
+            }
+        }
+
+        //例外3 申请执行人申请终结本次执行程序
+
+        item = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
+        
+        if(bytes(item).length == 0)
+        {
+            /*1、如案件结案日期为空(未结案),约谈表里至少有一条记录符合以下条件:[约谈时间]≤当前日期,且[是否同意终本]字段不为空*/
+            pdsj = now;
+        }
+        else
+        {
+            /*2、如案件结案日期不为空(已结案),约谈表里至少有一条记录符合以下条件[约谈时间]≤结案日期,且[是否同意终本]字段不为空*/
+            pdsj = LibString.toUint(item);
+        }
+
+        for(i = 0; ; i++)
+        {
+            prefix = LibString.concat("jghinfo.yt.", LibString.uint2str(i));
+            fullkey = LibString.concat(prefix, ".ytsj");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+            ytsj = LibString.toUint(item);
+
+            fullkey = LibString.concat(prefix, ".sftyzb");
+            item = czjl.aj_getInfo(ajbs, fullkey);
+
+            if((bytes(item).length != 0) && (ytsj != 0) && (ytsj <= pdsj))
+            {
+                return RESULT_OK;
+            }
+        }
+
+        return RESULT_NOK;
     }
 
     //核查9 尚未执行标的金额必须大于零
@@ -457,7 +536,6 @@ contract HghcContract { //合规核查
     
     //拍卖表pm
     //成交金额cjje
-
 
     //变卖表bm
     //bmze变卖总额
