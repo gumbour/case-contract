@@ -24,6 +24,9 @@ contract JzhcContract { //卷宗核查
     uint constant LCJD_ZBCDS = 74;//终本裁定书
     uint constant LCJD_ZJBLQKB = 75;//终结本次执行程序案件办理情况表
     uint constant LCJD_SXJDS = 77;//失信决定书
+    uint constant EXSIT = 1;
+    uint constant NOT_EXSIT = 0;
+    uint constant NO_JUDGE = 2;
 
     address public czjlAddr = 0x5E0A0044153da8644e866af8cbbA8f230b32E8E4;
     CzjlContract czjl = CzjlContract(czjlAddr);
@@ -75,7 +78,11 @@ contract JzhcContract { //卷宗核查
         string[] memory values = new string[](50);
         uint pos = 0;
         uint ret = 0;
-
+        uint dcbl = 0;
+        uint scl = 0;
+        uint xsgg = 0;
+        uint sfsj = 0;
+        
         //校验执行通知书
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.zxtzs.0.ah");
         pos = aj_jzhc_jl(keys, values, pos, 1, ret, LCJD_ZXTZS, 0);
@@ -93,14 +100,54 @@ contract JzhcContract { //卷宗核查
         pos = aj_jzhc_jl(keys, values, pos, 2, ret, LCJD_CCFQHZ, 3);
 
         //现场调查笔录/搜查令/悬赏公告/司法审计报告任一份
-        ret = aj_jzhc_jy(ajbs, "zdnrInfo.dcbl.0.ah");
-        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_XCDCBL, 4);
-        ret = aj_jzhc_jy(ajbs, "zdnrInfo.scl.0.ah");
-        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_SCL, 5);
-        ret = aj_jzhc_jy(ajbs, "zdnrInfo.xsgg.0.ah");
-        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_XSGG, 6);
-        ret = aj_jzhc_jy(ajbs, "zdnrInfo.Sfsjbg.0.ah");
-        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_SFSJBG, 7);
+        dcbl = aj_jzhc_jy(ajbs, "zdnrInfo.dcbl.0.ah");
+        scl = aj_jzhc_jy(ajbs, "zdnrInfo.scl.0.ah");
+        xsgg = aj_jzhc_jy(ajbs, "zdnrInfo.xsgg.0.ah");
+        sfsj = aj_jzhc_jy(ajbs, "zdnrInfo.sfsjbg.0.ah");
+        ret = NOT_EXSIT;
+
+        if(dcbl == EXSIT || scl == EXSIT || xsgg == EXSIT || sfsj == EXSIT)
+        {
+            if(dcbl == EXSIT)
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, EXSIT, LCJD_XCDCBL, 4);
+            }
+            else
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, NO_JUDGE, LCJD_XCDCBL, 4);
+            }
+            if(scl == EXSIT)
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, EXSIT, LCJD_SCL, 5);
+            }
+            else
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, NO_JUDGE, LCJD_SCL, 5);
+            }
+            if(xsgg == EXSIT)
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, EXSIT, LCJD_XSGG, 6);
+            }
+            else
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, NO_JUDGE, LCJD_XSGG, 6);
+            }
+            if(sfsj == EXSIT)
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, EXSIT, LCJD_SFSJBG, 7);
+            }
+            else
+            {
+                pos = aj_jzhc_jl(keys, values, pos, 3, NO_JUDGE, LCJD_SFSJBG, 7);
+            }
+        }
+        else
+        {
+            pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_XCDCBL, 4);
+            pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_SCL, 5);
+            pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_XSGG, 6);
+            pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_SFSJBG, 7);
+        }
 
         //限制消费令
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
