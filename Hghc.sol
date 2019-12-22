@@ -528,7 +528,21 @@ contract HghcContract { //合规核查
         {
             /*2、法律地位为被执行人的当事人类型为非自然人的被执行人有几个,
             在限制高消费表中的【被限制人】序号中至少有几个四位数序号*/
-            return true;
+            for(uint i = 0; ; i++)
+            {
+                prefix = LibString.concat("jghInfo.xzgxf.", LibString.uint2str(i));
+                key = LibString.concat(prefix, ".bxzr");
+                item = czjl.aj_getInfo(ajbs, key);
+                if(bytes(item).length == 0)
+                {
+                    break;
+                }
+
+                if(bytes(item).length >= 4)
+                {
+                    return true;
+                }
+            }
         }
 
         return false;
