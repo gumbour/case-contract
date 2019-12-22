@@ -37,6 +37,7 @@ contract HghcContract { //合规核查
     string constant YHCK = "09_ZX0015-2"; //财产类型为银行存款标识
     string constant HLWJR = "09_ZX0015-3"; //财产类型为互联网金融标识
     string constant RMFY = "人民法院";
+    string constant XZGXF = "限制高消费";
     int  constant FDSDW  = 10000;
 
     address public czjlAddr;
@@ -48,19 +49,21 @@ contract HghcContract { //合规核查
         bool[4] ccdcqk;
     }
 
-    function aj_hghc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
+    function aj_hghc_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint id) internal returns(uint)
     {
         uint index = pos;
-        string[2] memory resultK = ["hgxjy.jyx_id", "hgxjy.jyjg"];
+        string memory prefix;
+        string[2] memory resultK = [".jyx_id", ".jyjg"];
         string[2] memory resultV = ["0", "1"];
 
         //jyx_id
-        keys[index] = resultK[0];
+        prefix = LibString.concat("hgxjy.", LibString.uint2str(id));
+        keys[index] = LibString.concat(prefix, resultK[0]);
         values[index] = LibString.uint2str(jyid);
         index++;
 
         //jyjg
-        keys[index] = resultK[1];
+        keys[index] = LibString.concat(prefix, resultK[1]);
         values[index] = resultV[result];
         index++;
         return index;
@@ -96,7 +99,7 @@ contract HghcContract { //合规核查
     //执行主体信息表zxztxx
     //dsr当事人
     //dsrfldw当事人地位
-        
+
     //jaqk结案情况表
     //jarq结案日期
     function aj_hghc_jy2(string memory ajbs) internal returns(uint)
@@ -173,7 +176,7 @@ contract HghcContract { //合规核查
                         bCxfw = true;
                     }
                 }
-                
+
                 if((bRh == false) && (LibString.equal(item, "人行")))
                 {
                     bRh = true;
@@ -472,12 +475,71 @@ contract HghcContract { //合规核查
         return RESULT_OK;
     }
 
+    //限制高消费表xzgxf
+    function aj_hghc_jy7_check_dsr(string memory ajbs, string memory dsrlx, string memory bh, uint jarq) internal returns(bool)
+    {
+        string memory prefix;
+        string memory key;
+        string memory item;
+        uint jcrq;
+        bool bXzgxf;
+        bXzgxf = true;
+
+        if(LibString.equal(dsrlx, ZRR))
+        {
+            /*1、法律地位为被执行人的当事人类型为自然人，则当事人序号与限制高消费表中的【被限制人】序号一一对应，
+            且【限制种类】字段包含[限制高消费],且【解除日期】都为空或字段值>结案日期/当前日期；*/
+            for(uint i = 0; ; i++)
+            {
+                prefix = LibString.concat("jghInfo.xzgxf.", LibString.uint2str(i));
+                key = LibString.concat(prefix, ".bxzr");
+                item = czjl.aj_getInfo(ajbs, key);
+                if(bytes(item).length == 0)
+                {
+                    break;
+                }
+                if(LibString.equal(item, bh) == false)
+                {
+                    continue;
+                }
+
+                prefix = LibString.concat("jghInfo.xzgxf.", LibString.uint2str(i));
+                key = LibString.concat(prefix, ".xzzl");
+                item = czjl.aj_getInfo(ajbs, key);
+                if(bytes(item).length == 0)
+                {
+                    break;
+                }
+
+                if(LibString.indexOf(item, XZGXF) != -1)
+                {
+                    key = LibString.concat(prefix, ".jcrq");
+                    item = czjl.aj_getInfo(ajbs, key);
+                    jcrq = LibString.toUint(item);
+
+                    if((jcrq == 0) || ((jarq != 0) && (jcrq > jarq)) || ((jarq == 0) && (jcrq > now)))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        else
+        {
+            /*2、法律地位为被执行人的当事人类型为非自然人的被执行人有几个,
+            在限制高消费表中的【被限制人】序号中至少有几个四位数序号*/
+            return true;
+        }
+
+        return false;
+    }
     //核查7 已向被执行人发出限制消费令，并将符合条件的被执行人纳入失信被执行人名单
     //执行主体信息表zxztxx
     //dsr当事人
     //dsrfldw当事人地位
     //dsrlx当事人类型
     //sfyzjg身份验证结果
+    //xh 序号
 
     //限制高消费表xzgxf
     //bxzr被限制人
@@ -485,14 +547,37 @@ contract HghcContract { //合规核查
     //jcrq解除日期
     function aj_hghc_jy7(string memory ajbs) internal returns(uint)
     {
-        //string memory itemValue;
-        //string memory key;
-        /*1、法律地位为被执行人的当事人类型为自然人，则当事人序号与限制高消费表中的【被限制人】序号一一对应，
-          且【限制种类】字段包含[限制高消费],且【解除日期】都为空或字段值>结案日期/当前日期；*/
+        string memory item;
+        string memory key;
+        string memory prefix;
+        string memory dsrlx;
+        uint jarq = 0;
 
-        /*2、法律地位为被执行人的当事人类型为非自然人的被执行人有几个,
-        在限制高消费表中的【被限制人】序号中至少有几个四位数序号*/
+        item = czjl.aj_getInfo(ajbs, "jghinfo.jaqk.jarq");
+        jarq = LibString.toUint(item);
 
+        for(uint i = 0; ;i++)
+        {
+            //获取当事人编号
+            prefix = LibString.concat("jghInfo.zxztxx.", LibString.uint2str(i));
+            key = LibString.concat(prefix, ".xh");
+            item = czjl.aj_getInfo(ajbs, key);
+            if(bytes(item).length == 0)
+            {
+                break;
+            }
+
+            key = LibString.concat(prefix, ".dsrlx");
+            dsrlx = czjl.aj_getInfo(ajbs, key);
+
+            //检查当前编号的当事人是否限制高消费
+            if(aj_hghc_jy7_check_dsr(ajbs, dsrlx, item, jarq) == false)
+            {
+                return RESULT_NOK;
+            }
+        }
+
+        return RESULT_OK;
     }
 
     //核查8 已完成终本约谈且约谈日期必须早于结案日期
@@ -536,6 +621,10 @@ contract HghcContract { //合规核查
             prefix = LibString.concat("jghinfo.zxztxx.", LibString.uint2str(i));
             fullkey = LibString.concat(prefix, ".dsrfldw");
             item = czjl.aj_getInfo(ajbs, fullkey);
+            if(bytes(item).length == 0)
+            {
+                break;
+            }
 
             if(LibString.equal(item, SQR))
             {
@@ -553,6 +642,10 @@ contract HghcContract { //合规核查
         for(i = 0; i < salaay.length; i++)
         {
             item = czjl.aj_getInfo(ajbs, "jghinfo.sahlaxx.laay");
+            if(bytes(item).length == 0)
+            {
+                break;
+            }
             if(LibString.equal(item, salaay[i]))
             {
                 return RESULT_OK;
@@ -578,6 +671,10 @@ contract HghcContract { //合规核查
             fullkey = LibString.concat(prefix, ".ytsj");
             item = czjl.aj_getInfo(ajbs, fullkey);
             ytsj = LibString.toUint(item);
+            if(bytes(item).length == 0)
+            {
+                break;
+            }
 
             fullkey = LibString.concat(prefix, ".sftyzb");
             item = czjl.aj_getInfo(ajbs, fullkey);
@@ -730,55 +827,55 @@ contract HghcContract { //合规核查
         
         //检验项1
         ret = aj_hghc_jy1(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 1, ret);
+        pos = aj_hghc_jl(keys, values, pos, 1, ret, 0);
 
         //校验项2
         ret = aj_hghc_jy2(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 2, ret);
+        pos = aj_hghc_jl(keys, values, pos, 2, ret, 1);
 
         //校验项3
         ret = aj_hghc_jy3(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 3, ret);
+        pos = aj_hghc_jl(keys, values, pos, 3, ret, 2);
 
         //检验项4
         ret = aj_hghc_jy4(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 4, ret);
+        pos = aj_hghc_jl(keys, values, pos, 4, ret, 3);
 
         //校验项5
         ret = aj_hghc_jy5(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 5, ret);
+        pos = aj_hghc_jl(keys, values, pos, 5, ret, 4);
 
 
         //检验项6
         ret = aj_hghc_jy6(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 6, ret);
+        pos = aj_hghc_jl(keys, values, pos, 6, ret, 5);
 
         //检验项7
         ret = aj_hghc_jy7(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 7, ret);
+        pos = aj_hghc_jl(keys, values, pos, 7, ret, 6);
 
 
         //检验项8
         ret = aj_hghc_jy8(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 8, ret);
+        pos = aj_hghc_jl(keys, values, pos, 8, ret, 7);
 
         //检验项9
         
         ret = aj_hghc_jy9(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 9, ret);
+        pos = aj_hghc_jl(keys, values, pos, 9, ret, 8);
 
         //校验10
         
         ret = aj_hghc_jy10(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 10, ret);
+        pos = aj_hghc_jl(keys, values, pos, 10, ret, 9);
 
         //校验项11
         ret = aj_hghc_jy11(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 11, ret);
+        pos = aj_hghc_jl(keys, values, pos, 11, ret, 10);
 
         //校验项12
         ret = aj_hghc_jy12(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 12, ret);
+        pos = aj_hghc_jl(keys, values, pos, 12, ret, 11);
 
 
         czjl.aj_setResult(uuid, keys, values);
