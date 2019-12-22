@@ -27,6 +27,8 @@ contract XchcContract { //案件瑕疵核查
     uint constant LCJD_ZBCDS = 74;//终本裁定书
     uint constant LCJD_ZJBLQKB = 75;//终结本次执行程序案件办理情况表
     uint constant LCJD_SXJDS = 77;//失信决定书
+    uint constant LCJD_NZJBLQKB = 84; //拟终结本次执行
+    uint constant LCJD_HYTPYBL = 85; //合议庭评议笔录
     uint constant SIX_MONTHS = 6*30*24*3600;
 
     //线索状态为正在核实中标识
@@ -62,19 +64,21 @@ contract XchcContract { //案件瑕疵核查
         return index;
     }
 
-    function aj_hghc_blqx_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result) internal returns(uint)
+    function aj_hghc_blqx_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint id) internal returns(uint)
     {
         uint index = pos;
-        string[2] memory resultK = ["blqxjy.jyx_id", "blqxjy.jyjg"];
+        string memory prefix;
+        string[2] memory resultK = [".jyx_id", ".jyjg"];
         string[2] memory resultV = ["0", "1"];
 
         //jyx_id
-        keys[index] = resultK[0];
+        prefix = LibString.concat("blqxjy.", LibString.uint2str(id));
+        keys[index] = LibString.concat(prefix, resultK[0]);
         values[index] = LibString.uint2str(jyid);
         index++;
 
         //jyjg
-        keys[index] = resultK[1];
+        keys[index] = LibString.concat(prefix, resultK[1]);
         values[index] = resultV[result];
         index++;
         return index;
@@ -211,7 +215,7 @@ contract XchcContract { //案件瑕疵核查
     //2、如果结案日期不为空（已结案），执行期限届满日期-结案日期≥0；
     //3、如果办案期限表的执行期限届满日期为空，则从收案和立案信息表中取立案日期判断，结案日期-立案日期≤6个月；
     //4、如果结案日期为空，则用当前核查日期进行计算
-    function aj_xchc_blaxjy12(string memory ajbs) internal returns(uint)
+    function aj_xchc_blaxjy9(string memory ajbs) internal returns(uint)
     {
         string memory item;
         uint jarq = 0;
@@ -263,23 +267,25 @@ contract XchcContract { //案件瑕疵核查
 
         //校验1
         ret = aj_xchc_blaxjy1(ajbs);
-        pos = aj_hghc_blqx_jl(keys, values, pos, 1, ret);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 1, ret, 0);
 
         //校验2
         ret = aj_xchc_blaxjy2(ajbs);
-        pos = aj_hghc_blqx_jl(keys, values, pos, 2, ret);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 2, ret, 1);
 
         //校验5
         ret = aj_xchc_blaxjy5(ajbs);
-        pos = aj_hghc_blqx_jl(keys, values, pos, 5, ret);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 5, ret, 2);
 
         //校验7
         ret = aj_xchc_blaxjy7(ajbs);
-        pos = aj_hghc_blqx_jl(keys, values, pos, 7, ret);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 7, ret, 3);
 
         //校验12
-        ret = aj_xchc_blaxjy12(ajbs);
-        pos = aj_hghc_blqx_jl(keys, values, pos, 12, ret);
+        ret = aj_xchc_blaxjy9(ajbs);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 9, ret, 4);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 10, ret, 5);
+        pos = aj_hghc_blqx_jl(keys, values, pos, 11, ret, 6);
 
         return pos;
     }
@@ -361,12 +367,12 @@ contract XchcContract { //案件瑕疵核查
             ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.nzjgzs.", "qm");
             if(ret == RESULT_OK)
             {
-                pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, 0, 9);
+                pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_NZJBLQKB, 9);
             }
         }
         else
         {
-            pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, 0, 9);
+            pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_NZJBLQKB, 9);
         }
         
         //终结本次执行程序申请书
@@ -375,7 +381,7 @@ contract XchcContract { //案件瑕疵核查
 
         //合议庭评议笔录
         ret = aj_xchc_yy_jylist(ajbs, "zdnrInfo.zbhytbl.", "qm");
-        pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, 0, 10);
+        pos = aj_xchc_yy_jl(keys, values, pos, 8, ret, LCJD_HYTPYBL, 10);
 
 
         //终本裁定书

@@ -78,45 +78,45 @@ contract JzhcContract { //卷宗核查
 
         //校验执行通知书
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.zxtzs.0.ah");
-        pos = aj_jzhc_jl(keys, values, 1, pos, ret, LCJD_ZXTZS, 0);
+        pos = aj_jzhc_jl(keys, values, pos, 1, ret, LCJD_ZXTZS, 0);
 
         //报告财产令
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.bgccl.0.ah");
-        pos = aj_jzhc_jl(keys, values, 1, pos, ret, LCJD_BGCCL, 1);
+        pos = aj_jzhc_jl(keys, values, pos, 1, ret, LCJD_BGCCL, 1);
         
         //送达回证
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.sdhz.0.ah");
-        pos = aj_jzhc_jl(keys, values, 1, pos, ret, LCJD_SDHZ, 2);
+        pos = aj_jzhc_jl(keys, values, pos, 1, ret, LCJD_SDHZ, 2);
 
         //财产查询反馈汇总表
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.cccxfkzb.0.ah");
-        pos = aj_jzhc_jl(keys, values, 2, pos, ret, LCJD_CCFQHZ, 3);
+        pos = aj_jzhc_jl(keys, values, pos, 2, ret, LCJD_CCFQHZ, 3);
 
         //现场调查笔录/搜查令/悬赏公告/司法审计报告任一份
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.dcbl.0.ah");
-        pos = aj_jzhc_jl(keys, values, 3, pos, ret, LCJD_XCDCBL, 4);
+        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_XCDCBL, 4);
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.scl.0.ah");
-        pos = aj_jzhc_jl(keys, values, 3, pos, ret, LCJD_SCL, 5);
+        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_SCL, 5);
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xsgg.0.ah");
-        pos = aj_jzhc_jl(keys, values, 3, pos, ret, LCJD_XSGG, 6);
+        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_XSGG, 6);
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.Sfsjbg.0.ah");
-        pos = aj_jzhc_jl(keys, values, 3, pos, ret, LCJD_SFSJBG, 7);
+        pos = aj_jzhc_jl(keys, values, pos, 3, ret, LCJD_SFSJBG, 7);
 
         //限制消费令
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        pos = aj_jzhc_jl(keys, values, 4, pos, ret, LCJD_XZXFL, 8);
+        pos = aj_jzhc_jl(keys, values, pos, 4, ret, LCJD_XZXFL, 8);
 
         //约谈笔录
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        pos = aj_jzhc_jl(keys, values, 5, pos, ret, LCJD_YTBL, 9);
+        pos = aj_jzhc_jl(keys, values, pos, 5, ret, LCJD_YTBL, 9);
 
         //终本裁定书
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        pos = aj_jzhc_jl(keys, values, 6, pos, ret, LCJD_ZBCDS, 10);
+        pos = aj_jzhc_jl(keys, values, pos, 6, ret, LCJD_ZBCDS, 10);
 
         //终结本次执行程序案件办理情况表
         ret = aj_jzhc_jy(ajbs, "zdnrInfo.xzxfl.0.ah");
-        pos = aj_jzhc_jl(keys, values, 7, pos, ret, LCJD_ZJBLQKB, 11);
+        pos = aj_jzhc_jl(keys, values, pos, 7, ret, LCJD_ZJBLQKB, 11);
 
         czjl.aj_setResult(uuid, keys, values);
         return true;
