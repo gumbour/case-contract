@@ -441,8 +441,8 @@ contract HghcContract { //合规核查
             if(LibString.equal(item, YHCK) || LibString.equal(item, HLWJR))
             {
                 //获取账号余额 满足条件则continue;
-                key = LibString.concat(prefix, ".ccmc");
-                item = czjl.aj_getInfo(ajbs, key);  //todo 财产名称中可以提取金额------
+                key = LibString.concat(prefix, ".ccje");
+                item = czjl.aj_getInfo(ajbs, key);
 
                 //4位小数
                 zhje = LibString.parseInt(item, 4);
@@ -889,7 +889,7 @@ contract HghcContract { //合规核查
 
         //校验项12
         ret = aj_hghc_jy12(ajbs);
-        pos = aj_hghc_jl(keys, values, pos, 12, ret, 11);
+        pos = aj_hghc_jl(keys, values, pos, 14, ret, 11);
 
 
         czjl.aj_setResult(uuid, keys, values);
@@ -907,4 +907,4 @@ contract HghcContract { //合规核查
         czjl = CzjlContract(czjlAddr);
         czjl.aj_regContractAddr("hghc", LibString.addrToString(address(this)));
     }
-} 
+}
