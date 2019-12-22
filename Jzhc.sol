@@ -5,6 +5,7 @@ contract CzjlContract {
         function aj_setResult(uint64 uuid, string[] memory keys, string[] memory values) public;
         function aj_getResult(uint64 uuid) public view returns(string[] memory keys, string[] memory values);
         function aj_getInfo(string memory ajbs, string memory key) public returns(string memory _ret);
+        function aj_regContractAddr(string memory name, address addr) public;
 }
 
 import "./LibString.sol";
@@ -128,5 +129,6 @@ contract JzhcContract { //卷宗核查
     {
         czjlAddr = recordContractAddr;
         czjl = CzjlContract(czjlAddr);
+        czjl.aj_regContractAddr("jzhc", address(this));
     }
 } 

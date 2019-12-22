@@ -5,6 +5,7 @@ contract CzjlContract {
         function aj_setResult(uint64 uuid, string[] memory keys, string[] memory values) public;
         function aj_getResult(uint64 uuid) public view returns(string[] memory keys, string[] memory values);
         function aj_getInfo(string memory ajbs, string memory key) public returns(string memory _ret);
+        function aj_regContractAddr(string memory name, address addr) public;
 }
 
 import "./LibString.sol";
@@ -518,7 +519,8 @@ contract HghcContract { //合规核查
         uint i = 0;
         uint ytsj = 0;
         uint pdsj = 0;
-        string[13] memory salaay = ["3201","3202","3203","3204","3205","3234","3235","3230","3231","3366","3367","3232","3233"];
+        string[13] memory salaay = ["3201","3202","3203","3204","3205","3234",
+        "3235","3230","3231","3366","3367","3232","3233"];
 
         //首先进行例外检查, 满足例外则认为满足
         //例外1 申请执行人申请终结本次执行程序
@@ -792,5 +794,6 @@ contract HghcContract { //合规核查
     {
         czjlAddr = recordContractAddr;
         czjl = CzjlContract(czjlAddr);
+        czjl.aj_regContractAddr("hghc", address(this));
     }
 } 

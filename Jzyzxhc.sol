@@ -4,7 +4,8 @@ pragma experimental ABIEncoderV2;
 contract CzjlContract {
         function aj_setResult(uint64 uuid, string[] memory keys, string[] memory values) public;
         function aj_getResult(uint64 uuid) public view returns(string[] memory keys, string[] memory values);
-        function aj_getInfo(string memory ajbs, string memory key) public view returns(string memory _ret);
+        function aj_getInfo(string memory ajbs, string memory key) public returns(string memory _ret);
+        function aj_regContractAddr(string memory name, address addr) public;
 }
 
 import "./LibString.sol";
@@ -99,7 +100,7 @@ contract JzyzxhcContract { //卷宗一致性核查
     {
         
 
-        czjl.aj_setResult(uuid, keys, values);
+        //czjl.aj_setResult(uuid, keys, values);
         return true;
     }
 
@@ -112,5 +113,6 @@ contract JzyzxhcContract { //卷宗一致性核查
     {
         czjlAddr = recordContractAddr;
         czjl = CzjlContract(czjlAddr);
+        czjl.aj_regContractAddr("jzyzxhc", address(this));
     }
 } 

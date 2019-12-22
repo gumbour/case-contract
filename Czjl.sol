@@ -7,8 +7,16 @@ contract CzjlContract { //操作记录
         string[] values;
     }
 
+    struct ContractAddr{
+        string name;
+        address addr;
+    }
+
     mapping(uint64 => Result) hcjg;
     mapping(string => mapping(string => string)) czjl;
+    mapping(string => uint) addrIndex;
+    ContractAddr[] contractAddr;
+
 
     //记录案件信息, 输入案号,案件信息(kv))
     function aj_xxjl(string memory ajbs, string[] memory keys, string[] memory values) public returns(bool){
@@ -34,5 +42,53 @@ contract CzjlContract { //操作记录
     {
         keys = hcjg[uuid].keys;
         values = hcjg[uuid].values;
+    }
+
+    function addrToString(address _self) internal returns (string _ret) {
+        uint len = _self.length;
+        bytes self = bytes(_self);
+
+        _ret = new string(len*2 + 2);
+        bytes(_ret)[0] = '0';
+        bytes(_ret)[1] = 'x';
+
+        for(uint8 i = 0; i < len; i++)
+        {
+            uint8 digit = uint8(self[i]&0x0F);
+
+            if (digit < 10)
+                bytes(_ret)[i] = byte(digit+0x30);
+            else
+                bytes(_ret)[i] = byte(digit-10+0x61);
+        }
+    }
+
+    function aj_getContractAddr() public view returns(string[] memory name, string[] memory addr)
+    {
+        name = new string[](contractAddr.length);
+        addr = new string[](contractAddr.length);
+
+        for(uint i = 0; i < contractAddr.length; i++)
+        {
+            name[i] = contractAddr[i].name;
+            addr[i] = addrToString(contractAddr[i].addr);
+        }
+    }
+
+    function aj_regContractAddr(string memory name, address addr) public
+    {
+        uint indx = 0;
+        indx = addrIndex[name];
+
+        if(indx == 0)
+        {
+            indx = contractAddr.length++;
+            contractAddr[indx].name = name;
+            contractAddr[indx].addr = addr;
+            addrIndex[name] = indx + 1;
+            return;
+        }
+
+        contractAddr[indx-1].addr = addr;
     }
 }
