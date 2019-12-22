@@ -16,6 +16,75 @@ contract JzyzxhcContract { //卷宗一致性核查
     address public czjlAddr;
     CzjlContract czjl = CzjlContract(czjlAddr);
     
+    function aj_jzyzx_bljl_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint id)
+        internal returns(uint)
+    {
+        uint index = pos;
+        string memory prefix;
+        string[2] memory resultK = [".jyx_id", ".jyjg"];
+        string[2] memory resultV = ["0", "1"];
+
+        //jyx_id
+        prefix = LibString.concat("bljlyzxjy.", LibString.uint2str(id));
+        keys[index] = LibString.concat(prefix, resultK[0]);
+        values[index] = LibString.uint2str(jyid);
+        index++;
+
+        //jyjg
+        keys[index] = LibString.concat(prefix, resultK[1]);
+        values[index] = resultV[result];
+        index++;
+        return index;
+    }
+
+    function aj_jzyzx_jznr_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint lcjd_id, uint id)
+        internal returns(uint)
+    {
+        uint index = pos;
+        string memory prefix;
+        string[3] memory resultK = [".jyx_id", ".jyjg", ".lcjd_id"];
+        string[4] memory resultV = ["0", "1", "2", "3"];
+
+        //jyx_id
+        prefix = LibString.concat("jznryzxjy.", LibString.uint2str(id));
+        keys[index] = LibString.concat(prefix, resultK[0]);
+        values[index] = LibString.uint2str(jyid);
+        index++;
+
+        //lcjd_id
+        keys[index] = LibString.concat(prefix, resultK[2]);
+        values[index] = LibString.uint2str(lcjd_id);
+        index++;
+
+        //jyjg
+        keys[index] = LibString.concat(prefix, resultK[1]);
+        values[index] = resultV[result];
+        index++;
+        return index;
+    }
+
+    function aj_jzyzx_nrjy_jl(string[] memory keys, string[] memory values, uint pos, uint jyid, uint result, uint id)
+        internal returns(uint)
+    {
+        uint index = pos;
+        string memory prefix;
+        string[2] memory resultK = [".jz_id", ".jyjg"];
+        string[2] memory resultV = ["0", "1"];
+
+        //jz_id
+        prefix = LibString.concat("nrjy_cqjg.", LibString.uint2str(id));
+        keys[index] = LibString.concat(prefix, resultK[0]);
+        values[index] = LibString.uint2str(jyid);
+        index++;
+
+        //jyjg
+        keys[index] = LibString.concat(prefix, resultK[1]);
+        values[index] = resultV[result];
+        index++;
+        return index;
+    }
+
+
     //执行通知书中的案号与当前案件一致
     function aj_jzyzxhc_zxtzs_ah(string memory ajbs) internal returns(bool)
     {
@@ -96,11 +165,25 @@ contract JzyzxhcContract { //卷宗一致性核查
         return false;
     }
 
+
+
+
     function aj_jzyzxhc(string memory ajbs, uint64 uuid) public returns(bool)
     {
-        
+        string[] memory keys = new string[](100);
+        string[] memory values = new string[](100);
+        uint pos = 0;
 
-        //czjl.aj_setResult(uuid, keys, values);
+        pos = aj_jzyzx_bljl_jl(keys, values, pos, 1, 1, 0);
+        pos = aj_jzyzx_bljl_jl(keys, values, pos, 2, 1, 1);
+
+        pos = aj_jzyzx_jznr_jl(keys, values, pos, 1, 1, 53, 2);
+        pos = aj_jzyzx_jznr_jl(keys, values, pos, 1, 2, 71, 3);
+        
+        pos = aj_jzyzx_nrjy_jl(keys, values, pos, 1, 1, 4);
+        pos = aj_jzyzx_nrjy_jl(keys, values, pos, 1, 2, 5);
+        
+        czjl.aj_setResult(uuid, keys, values);
         return true;
     }
 
