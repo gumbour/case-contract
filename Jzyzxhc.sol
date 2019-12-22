@@ -178,10 +178,10 @@ contract JzyzxhcContract { //卷宗一致性核查
         pos = aj_jzyzx_bljl_jl(keys, values, pos, 2, 1, 1);
 
         pos = aj_jzyzx_jznr_jl(keys, values, pos, 1, 1, 53, 2);
-        pos = aj_jzyzx_jznr_jl(keys, values, pos, 1, 2, 71, 3);
+        pos = aj_jzyzx_jznr_jl(keys, values, pos, 2, 1, 71, 3);
         
         pos = aj_jzyzx_nrjy_jl(keys, values, pos, 1, 1, 4);
-        pos = aj_jzyzx_nrjy_jl(keys, values, pos, 1, 2, 5);
+        pos = aj_jzyzx_nrjy_jl(keys, values, pos, 2, 1, 5);
         
         czjl.aj_setResult(uuid, keys, values);
         return true;
