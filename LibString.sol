@@ -149,4 +149,22 @@ library LibString {
         return _indexOf(_base, _value, 0);
     }
 
+    function addrToString(address _self) internal returns (string memory _ret) {
+        uint160 self = uint160(_self);
+
+        _ret = new string(20*2 + 2);
+        bytes(_ret)[0] = '0';
+        bytes(_ret)[1] = 'x';
+
+        for (uint8 i = 41; i>=2; --i)
+        {
+            uint8 digit = uint8(self&0x0F);
+            self /= 16;
+
+            if (digit < 10)
+                bytes(_ret)[i] = byte(digit+0x30);
+            else
+                bytes(_ret)[i] = byte(digit-10+0x61);
+        }
+    }
 }
